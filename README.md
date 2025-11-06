@@ -1,65 +1,92 @@
-# Portfolio-Blog Projesi
+Portfolio-Blog Project
 
-Okul projesi için Modern web teknolojileri kullanılarak geliştirmekte olduğum kişisel portföy ve blog sitesi.
+A personal portfolio and blog website I am developing as a university project, built using modern web technologies to showcase my work and share technical content.
 
-## 🛠️ Teknoloji Stack'i
+🛠️ Tech Stack
+Frontend Framework
 
-### Frontend Framework
-- **Next.js 14**: React tabanlı, server-side rendering ve static site generation özellikleriyle modern web uygulamaları geliştirmek için kullanılan güçlü bir framework.
-- **TypeScript**: JavaScript'e tip güvenliği ekleyerek daha güvenilir ve bakımı kolay kod yazımı sağlar.
+Next.js 14: A React-based framework supporting server-side rendering and static site generation for modern web applications.
 
-### Styling ve UI
-- **Tailwind CSS**: Utility-first CSS framework'ü ile hızlı ve özelleştirilebilir tasarımlar.
-- **Framer Motion**: React için gelişmiş animasyon kütüphanesi ile akıcı ve etkileyici kullanıcı deneyimleri.
+TypeScript: Adds type safety to JavaScript, enabling more reliable and maintainable code.
 
-### İçerik Yönetimi
-- **MDX**: Markdown'ı JSX ile birleştirerek zengin içerik oluşturma imkanı.
-- **Gemini AI**: Google'ın yapay zeka modeli ile otomatik içerik üretimi ve geliştirme.
+Styling and UI
 
-### Deployment ve Performans
-- **Vercel**: Next.js uygulamaları için optimize edilmiş deployment platformu.
-- **SEO Optimizasyonu**: Next.js'in built-in SEO özellikleri ile arama motoru görünürlüğü.
+Tailwind CSS: Utility-first CSS framework for fast and customizable designs.
 
-### Versiyon Kontrolü
-- **Git**: Proje versiyon kontrolü ve işbirliği.
-- **GitHub**: Kod hosting ve proje yönetimi.
+Framer Motion: Advanced animation library for smooth and dynamic user experiences.
 
-## 🔧 Teknik Detaylar
+Content Management
 
-### Next.js 14 Özellikleri
-- App Router
-- Server Components
-- Server Actions
-- Image Optimization
-- Route Handlers
+MDX: Combines Markdown with JSX to create rich, interactive content.
 
-### TypeScript Kullanımı
-- Interface tanımlamaları
-- Type safety
-- Better IDE support
-- Enhanced code quality
+Gemini AI: Integrated Google’s AI model for automated content generation and enhancement.
 
-### Tailwind CSS Yapılandırması
-- Custom theme
-- Responsive design
-- Dark mode support
-- Component-based styling
+Deployment and Performance
 
-### Framer Motion Animasyonları
-- Page transitions
-- Scroll animations
-- Hover effects
-- Loading states
+Vercel: Optimized deployment platform for Next.js applications.
 
-### Gemini AI Entegrasyonu
-- Content generation
-- Blog post creation
-- Code assistance
-- Natural language processing
+SEO Optimization: Utilizes built-in Next.js SEO features for better search engine visibility.
 
-## 📦 Bağımlılıklar
+Version Control
 
-```json
+Git: For version control and collaboration.
+
+GitHub: For code hosting and project management.
+
+🔧 Technical Details
+Next.js 14 Features
+
+App Router
+
+Server Components
+
+Server Actions
+
+Image Optimization
+
+Route Handlers
+
+TypeScript Usage
+
+Interface definitions
+
+Type safety
+
+Enhanced IDE support
+
+Improved code quality
+
+Tailwind CSS Configuration
+
+Custom theme
+
+Responsive design
+
+Dark mode support
+
+Component-based styling
+
+Framer Motion Animations
+
+Page transitions
+
+Scroll animations
+
+Hover effects
+
+Loading states
+
+Gemini AI Integration
+
+Content generation
+
+Blog post creation
+
+Code assistance
+
+Natural language processing
+
+📦 Dependencies
 {
   "dependencies": {
     "next": "^14.0.0",
@@ -72,52 +99,68 @@ Okul projesi için Modern web teknolojileri kullanılarak geliştirmekte olduğu
     "@google/generative-ai": "^0.1.0"
   }
 }
-```
 
-## 🚀 Performans Metrikleri
+🚀 Performance Metrics
 
-- Lighthouse Score: 95+
-- First Contentful Paint: < 1.5s
-- Time to Interactive: < 2s
-- Core Web Vitals: Optimized
+Lighthouse Score: 95+
 
-## 🔍 SEO Optimizasyonu
+First Contentful Paint: < 1.5s
 
-- Meta tags
-- Open Graph
-- Sitemap
-- Robots.txt
-- Structured data
+Time to Interactive: < 2s
 
-## �� Responsive Tasarım
+Core Web Vitals: Optimized
 
-- Mobile-first approach
-- Breakpoint optimizasyonu
-- Touch-friendly interactions
-- Adaptive layouts
+🔍 SEO Optimization
 
-## 🔒 Güvenlik
+Meta tags
 
-- TypeScript ile tip güvenliği
-- API route protection
-- Environment variables
-- Secure headers
+Open Graph
 
-## 🌐 Çoklu Dil Desteği
+Sitemap
 
-- i18n entegrasyonu
-- RTL desteği
-- Language switching
-- Localized content
+Robots.txt
 
-## 📊 Analytics
+Structured data
 
-- Vercel Analytics
-- Performance monitoring
-- Error tracking
-- User behavior analysis
+📱 Responsive Design
 
-Görüntüler .
+Mobile-first approach
+
+Breakpoint optimization
+
+Touch-friendly interactions
+
+Adaptive layouts
+
+🔒 Security
+
+Type-safe code with TypeScript
+
+Protected API routes
+
+Environment variables
+
+Secure headers
+
+🌐 Multi-language Support
+
+i18n integration
+
+RTL support
+
+Language switching
+
+Localized content
+
+📊 Analytics
+
+Vercel Analytics
+
+Performance monitoring
+
+Error tracking
+
+User behavior analysis
 
 ![image](https://github.com/user-attachments/assets/521a1a98-31f9-4ed9-9f51-5a2b72e64ce7)
 ![image](https://github.com/user-attachments/assets/9dc6d2e2-1881-4a28-b01f-b45113a11ce3)
