@@ -107,20 +107,59 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <Suspense fallback={null}>
-          <LocalStorageHandler setUserIdCallback={(id) => setUserId(id)} />
-        </Suspense>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12"
-        >
-          <h1 className="text-4xl font-bold text-white">Blog Yazıları</h1>
-        </motion.div>
+    <div className="relative min-h-screen">
+      {/* Animated background */}
+      <div className="fixed inset-0 w-full h-full">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        {/* Floating gradient orbs */}
+        <motion.div
+          animate={{ 
+            x: [0, -100, 0],
+            y: [0, 100, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-40 right-20 w-72 h-72 bg-indigo-600/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-40 left-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"
+        />
+      </div>
+
+      <div className="relative z-20 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <Suspense fallback={null}>
+            <LocalStorageHandler setUserIdCallback={(id) => setUserId(id)} />
+          </Suspense>
+          
+          {/* Page Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16 mt-12"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="inline-block px-4 py-2 rounded-full glass border border-purple-500/30 mb-4"
+            >
+              <span className="text-purple-400 text-sm font-medium">Blog Posts</span>
+            </motion.div>
+            <h1 className="text-5xl md:text-6xl font-black gradient-text mb-4">
+              Blog Yazıları
+            </h1>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Yazılım geliştirme, teknoloji ve projelerimle ilgili yazılar
+            </p>
+          </motion.div>
 
         {error && (
           <div className="mb-6 p-4 bg-red-900/40 border border-red-800 rounded-lg text-red-400">
@@ -137,10 +176,11 @@ export default function BlogPage() {
             {posts.map((post, index) => (
               <motion.div
                 key={post.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: -10 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-gray-800/50 rounded-xl shadow-2xl overflow-hidden hover:shadow-indigo-500/10 transition-all duration-300 border border-gray-700 backdrop-blur-sm"
+                className="glass-strong rounded-2xl shadow-2xl overflow-hidden hover:shadow-purple-500/30 transition-all duration-500 border border-white/10 hover:border-purple-500/50"
               >
                 <Link href={`/blog/${post.id}`}>
                   <div className="p-6">
@@ -155,7 +195,7 @@ export default function BlogPage() {
                     </div>
                   </div>
                 </Link>
-                <div className="bg-gray-800/80 p-4 flex justify-between items-center border-t border-gray-700">
+                <div className="glass p-4 flex justify-between items-center border-t border-white/10">
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleLike(post.id)}
@@ -181,8 +221,11 @@ export default function BlogPage() {
                       </span>
                     </button>
                   </div>
-                  <Link href={`/blog/${post.id}`} className="text-indigo-400 text-sm hover:text-indigo-300">
-                    Devamını Oku →
+                  <Link href={`/blog/${post.id}`} className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-400 hover:bg-purple-600/30 transition-all duration-300 text-sm group/btn">
+                    <span>Devamını Oku</span>
+                    <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </Link>
                 </div>
               </motion.div>
@@ -194,7 +237,7 @@ export default function BlogPage() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-16 bg-gray-800/30 rounded-xl shadow-2xl border border-gray-700 backdrop-blur-sm"
+            className="flex flex-col items-center justify-center py-16 glass-strong rounded-2xl shadow-2xl border border-white/10"
           >
             <svg
               className="w-16 h-16 text-gray-600 mb-4"
@@ -213,12 +256,16 @@ export default function BlogPage() {
             <p className="text-gray-500 mb-6">Blog yazılarını Admin Paneli'nden ekleyebilirsiniz.</p>
             <Link
               href="/admin/blog"
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg shadow-indigo-500/25"
+              className="btn-shine px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white font-bold text-lg shadow-2xl shadow-purple-500/40 hover:shadow-purple-500/60 transition-all duration-300 inline-flex items-center gap-2"
             >
-              Admin Paneline Git
+              <span>Admin Paneline Git</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </Link>
           </motion.div>
         )}
+        </div>
       </div>
     </div>
   );

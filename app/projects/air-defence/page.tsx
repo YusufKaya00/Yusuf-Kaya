@@ -1,188 +1,272 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 import ImageModal from '@/components/ImageModal';
 
 export default function AirDefenceProject() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Resime tıklama işlemi
   const handleImageClick = (imageSrc: string) => {
-    console.log('Air Defence - Resime tıklandı:', imageSrc);
-    
-    // Modalı açalım
     setSelectedImage(imageSrc);
   };
 
-  // Modal açıldığında konsola bilgi yazdır
-  useEffect(() => {
-    if (selectedImage) {
-      console.log('Rendering modal with image:', selectedImage);
-    }
-  }, [selectedImage]);
-
-  // Proje resimleri - En az iki resim olduğundan emin olun
   const images = [
     {
       src: '/projects/air-defence/air-defence.png',
       alt: 'Air Defence Interface Screenshot 1',
-      description: 'Ana Arayüz'
+      description: 'Ana Kontrol Paneli'
     },
     {
-      src: '/projects/air-defence/airdefence22.png', // Geçici olarak başka bir resim kullanıyoruz
+      src: '/projects/air-defence/airdefence22.png',
       alt: 'Air Defence Interface Screenshot 2',
-      description: 'Detaylı Görünüm'
+      description: 'Radar Görünümü'
     },
-    // Diğer görseller buraya eklenebilir
   ];
 
   return (
     <div className="relative min-h-screen">
+      {/* Animated background */}
       <div className="fixed inset-0 w-full h-full">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-gray-800 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        <motion.div
+          animate={{ 
+            x: [0, 80, 0],
+            y: [0, -80, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-20 w-72 h-72 bg-red-600/20 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{ 
+            x: [0, -80, 0],
+            y: [0, 80, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-20 right-20 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl"
+        />
       </div>
 
       <section className="relative z-20 py-32">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
           >
-            <h1 className="text-4xl font-bold text-white mb-6">Air Defence Interface</h1>
-            <p className="text-xl text-gray-300 mb-12">Savunma Sistemleri Arayüzü</p>
-          </motion.div>
-
-          {/* Proje Görseli veya Video */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="relative aspect-video mb-12 rounded-xl overflow-hidden shadow-2xl border border-gray-700"
-          >
-            {/* Video için */}
-            <video
-              className="w-full h-full object-cover"
-              controls
-              poster="/projects/air-defence/air-defence.png"
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="inline-block px-4 py-2 rounded-full glass border border-red-500/30 mb-4"
             >
-              <source src="/videos/air-defence.mp4" type="video/mp4" />
-              Tarayıcınız video etiketini desteklemiyor.
-            </video>
+              <span className="text-red-400 text-sm font-medium">Defense System</span>
+            </motion.div>
+            <h1 className="text-5xl md:text-6xl font-black gradient-text mb-4">
+              Air Defence Interface
+            </h1>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Hava savunma sistemi kontrol ve yönetim arayüzü
+            </p>
           </motion.div>
 
-          {/* Proje Detayları */}
+          {/* Video Section */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="relative aspect-video mb-16 rounded-2xl overflow-hidden shadow-2xl glass-strong border border-white/10"
           >
-            <div className="md:col-span-2 prose prose-invert">
-              <h2 className="text-2xl font-bold text-white">Proje Hakkında</h2>
-              <p className="text-gray-300">
-                Air Defence Interface, hava savunma sistemleri için geliştirilmiş modern bir komuta kontrol arayüzüdür. Radar sistemleri, füze bataryaları ve erken uyarı sistemleri gibi farklı savunma bileşenlerini entegre ederek tek bir merkezi kontrol noktasından yönetilmesini sağlar.
-              </p>
-              <p className="text-gray-300">
-                Bu arayüz, gerçek zamanlı tehdit analizi, hedef takibi ve karar destek sistemi özellikleri ile hava savunma operasyonlarının etkinliğini ve tepki süresini önemli ölçüde iyileştirir.
-              </p>
-              <h3 className="text-xl font-bold text-white mt-8">Özellikler</h3>
-              <ul className="text-gray-300">
-                <li>Gerçek zamanlı tehdit analizi ve takibi</li>
-                <li>Otonom hedef tanımlama ve sınıflandırma</li>
-                <li>Karar destek sistemi</li>
-                <li>Geçmiş olay kaydı ve analizi</li>
-              </ul>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-4">Teknolojiler</h2>
-              <div className="space-y-2">
-                <span className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                  .Net
-                </span>
-                <span className="inline-block px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">
-                  Python
-                </span>
-                <span className="inline-block px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
-                  OpenCv
-                </span>
-               
-              </div>
-
-              <h2 className="text-2xl font-bold text-white mb-4 mt-8">Durumu</h2>
-              <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 text-blue-300">
-                <p className="text-sm">Tamamlanmış Ve Aktif Geliştirme</p>
-                <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: '100%' }}></div>
-                </div>
-                <p className="text-xs mt-2">Güncelleme: Son sürüm v3.0.0</p>
-              </div>
-              
-              <h2 className="text-2xl font-bold text-white mb-4 mt-8">Kaynaklar</h2>
-              <div className="space-y-2">
-                <a 
-                  href="#" 
-                  className="flex items-center space-x-2 text-indigo-400 hover:text-indigo-300 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                  </svg>
-                  <span>Teknik Dokümantasyon</span>
-                </a>
-                <a 
-                  href="#" 
-                  className="flex items-center space-x-2 text-red-400 hover:text-red-300 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                  <span>Demo Video</span>
-                </a>
-              </div>
-            </div>
+            <img
+              src="/projects/air-defence/air-defence.png"
+              alt="Air Defence Interface"
+              className="w-full h-full object-cover"
+            />
           </motion.div>
 
-          {/* Ekstra Görseller */}
+          {/* Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            {/* Main Content */}
+            <motion.div
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="lg:col-span-2 space-y-8"
+            >
+              <div className="glass-strong rounded-2xl p-8 border border-white/10">
+                <h2 className="text-3xl font-bold gradient-text mb-6">Proje Hakkında</h2>
+                <div className="space-y-4 text-gray-300 leading-relaxed">
+                  <p>
+                    Hava Savunma Sistemi arayüzü, gerçek zamanlı tehdit tespiti, takibi ve müdahale yönetimi için geliştirilmiş kritik bir komuta kontrol sistemidir. Radar entegrasyonu, füze sistemi kontrolü ve hava sahası yönetimi özelliklerini içerir.
+                  </p>
+                  <p>
+                    Sistem, çoklu radar verilerini birleştirerek 3D hava sahası görüntüsü oluşturur, tehditleri sınıflandırır ve otomatik savunma senaryolarını yürütür. Yüksek performans ve güvenilirlik gereksinimleri için optimize edilmiştir.
+                  </p>
+                </div>
+              </div>
+
+              <div className="glass-strong rounded-2xl p-8 border border-white/10">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                  Özellikler
+                </h3>
+                <ul className="space-y-3 text-gray-300">
+                  {[
+                    '360° radar kapsama alanı görselleştirmesi',
+                    'Çoklu hedef takip ve önceliklendirme',
+                    'Otomatik tehdit değerlendirme algoritmaları',
+                    'Füze sistemi entegrasyonu ve ateş kontrolü',
+                    'Gerçek zamanlı 3D hava sahası haritası',
+                    'IFF (Identify Friend or Foe) sistemi',
+                    'Elektronik harp önlemleri yönetimi'
+                  ].map((feature, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                      className="flex items-start gap-3"
+                    >
+                      <svg className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{feature}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+
+            {/* Sidebar */}
+            <motion.div
+              initial={{ x: 30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-6"
+            >
+              {/* Technologies */}
+              <div className="glass-strong rounded-2xl p-6 border border-white/10">
+                <h3 className="text-xl font-bold text-white mb-4">Teknolojiler</h3>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">C++</span>
+                  <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">Qt</span>
+                  <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">OpenGL</span>
+                  <span className="px-3 py-1 glass border border-purple-500/30 text-purple-400 rounded-full text-xs font-medium">Real-time OS</span>
+                  <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">Networking</span>
+                  <span className="px-3 py-1 glass border border-cyan-500/30 text-cyan-400 rounded-full text-xs font-medium">Signal Processing</span>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="glass-strong rounded-2xl p-6 border border-white/10">
+                <h3 className="text-xl font-bold text-white mb-4">Durumu</h3>
+                <div className="glass rounded-xl p-4 border border-orange-500/30">
+                  <p className="text-orange-300 font-medium mb-2">Test Aşamasında</p>
+                  <div className="w-full bg-gray-800/50 rounded-full h-2">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: '85%' }}
+                      transition={{ delay: 0.8, duration: 1 }}
+                      className="bg-gradient-to-r from-orange-600 to-red-600 h-2 rounded-full"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">Sistem entegrasyonu devam ediyor</p>
+                </div>
+              </div>
+
+              {/* Resources */}
+              <div className="glass-strong rounded-2xl p-6 border border-white/10">
+                <h3 className="text-xl font-bold text-white mb-4">Kaynaklar</h3>
+                <div className="space-y-3">
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 p-3 rounded-xl glass border border-indigo-500/30 hover:bg-indigo-500/10 transition-all duration-300 group"
+                  >
+                    <svg className="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span className="text-gray-300 text-sm group-hover:text-white transition-colors">Proje Dökümantasyonu</span>
+                    <svg className="w-4 h-4 ml-auto text-gray-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                  <a
+                    href="#"
+                    className="flex items-center gap-3 p-3 rounded-xl glass border border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-300 group"
+                  >
+                    <svg className="w-5 h-5 text-emerald-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span className="text-gray-300 text-sm group-hover:text-white transition-colors">Teknik Özellikler</span>
+                    <svg className="w-4 h-4 ml-auto text-gray-500 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Gallery */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8"
+            transition={{ delay: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16"
           >
             {images.map((image, index) => (
-              <div key={index} className="group relative overflow-hidden rounded-lg shadow-lg border border-gray-700">
-                <div className="relative aspect-video cursor-pointer" onClick={() => handleImageClick(image.src)}>
+              <motion.div
+                key={index}
+                whileHover={{ y: -10 }}
+                className="group relative overflow-hidden rounded-2xl glass-strong border border-white/10 hover:border-purple-500/50 transition-all duration-500 cursor-pointer"
+                onClick={() => handleImageClick(image.src)}
+              >
+                <div className="relative aspect-video overflow-hidden">
                   <img
                     src={image.src}
                     alt={image.alt}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="flex h-full items-center justify-center">
-                      <span className="text-white font-medium">Büyütmek için tıklayın</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 p-6">
+                      <p className="text-white font-medium flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                        Büyütmek için tıklayın
+                      </p>
                     </div>
                   </div>
                 </div>
-                <p className="mt-2 p-2 text-sm text-gray-300">{image.description}</p>
-              </div>
+                <div className="p-4 glass border-t border-white/10">
+                  <p className="text-sm text-gray-300">{image.description}</p>
+                </div>
+              </motion.div>
             ))}
           </motion.div>
 
-          {/* Diğer projelerim linkine yönlendirme */}
+          {/* Back Button */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-16 text-center"
+            transition={{ delay: 0.7 }}
+            className="text-center"
           >
             <Link
               href="/portfolio"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300"
+              className="btn-shine inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 text-white font-bold text-lg shadow-2xl shadow-purple-500/40 hover:shadow-purple-500/60 transition-all duration-300"
             >
-              ← Diğer Projelerim
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>Diğer Projelerim</span>
             </Link>
           </motion.div>
         </div>
@@ -196,4 +280,4 @@ export default function AirDefenceProject() {
       />
     </div>
   );
-} 
+}
