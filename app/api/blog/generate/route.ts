@@ -1,30 +1,22 @@
 import { NextResponse } from 'next/server';
 
-// Gemini API için Google Generative AI kütüphanesini kullanacağız
-// Not: Bu kütüphaneyi yüklemek için terminal'de:
-// cd portfolio-blog && npm install @google/generative-ai
-
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Çevre değişkeninden API anahtarını al (not: bu test için gerçek bir API anahtarı kullanıyoruz)
-// Gerçek projede API anahtarı .env.local dosyasında olmalıdır
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyB8VwNLJdgMnpnThTgwZEHPWK0cGIIYyJw';
+// OpenRouter API - Mistral Devstral 2512 (free tier) kullanıyoruz
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
 // API anahtarlarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
-  // Gerçek bir API anahtarı en az 30 karakter uzunluğunda olmalı
-  // ve genellikle "AIza" ile başlar
-  return key && key.length >= 30 && key.startsWith('AIza');
+  // OpenRouter API anahtarları "sk-or-" ile başlar
+  return key && key.length >= 30 && key.startsWith('sk-or-');
 }
 
-// Zaman aşımı süresini artırıyoruz (milisaniye) - 20 saniye
-const TIMEOUT_DURATION = 20000;
+// Zaman aşımı süresini artırıyoruz (milisaniye) - 30 saniye
+const TIMEOUT_DURATION = 30000;
 
 // Yedek içerik - API çağrısı başarısız olursa kullanılacak
 const sampleContent = {
   "default": `# Blog İçeriği Örneği
 
-Bu bir örnek blog içeriğidir. Gerçek bir içerik oluşturmak için Gemini API kullanılacaktır.
+Bu bir örnek blog içeriğidir. Gerçek bir içerik oluşturmak için AI API kullanılacaktır.
 
 ## Örnek Alt Başlık
 
@@ -128,10 +120,10 @@ function timeoutPromise(ms: number) {
 // Prompt'a göre uygun yedek içeriği seç
 function selectFallbackContent(prompt: string) {
   console.log('Yedek içerik kullanılıyor...');
-  
+
   // Prompt'a göre hazır içeriklerden birini seçelim
   let content = sampleContent.default;
-  
+
   const promptLower = prompt.toLowerCase();
   if (promptLower.includes('blog') || promptLower.includes('yazı')) {
     content = sampleContent.blog;
@@ -140,53 +132,76 @@ function selectFallbackContent(prompt: string) {
   } else if (promptLower.includes('yazılım') || promptLower.includes('kod') || promptLower.includes('web')) {
     content = sampleContent.yazılım;
   }
-  
+
   return content;
 }
 
-// Gemini API'si ile içerik üretimi
-async function generateContentWithGemini(prompt: string) {
+// OpenRouter API ile içerik üretimi (Mistral Devstral 2512)
+async function generateContentWithOpenRouter(prompt: string) {
   // API anahtarı kontrolü
-  if (!isValidAPIKey(GEMINI_API_KEY)) {
+  if (!isValidAPIKey(OPENROUTER_API_KEY)) {
     console.log('Geçerli API anahtarı bulunamadı, yedek içerik kullanılıyor');
     return selectFallbackContent(prompt);
   }
 
   try {
-    console.log('Gemini API ile içerik üretiliyor...');
-    
-    // Google AI modelini başlat
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
+    console.log('OpenRouter API ile içerik üretiliyor (Mistral Devstral)...');
+
     // Prompt hazırlama
     const promptText = `Lütfen aşağıdaki konu hakkında Türkçe bir blog yazısı oluştur. 
-      - Markdown formatında olsun
-      - Başlık, alt başlıklar içersin
-      - Detaylı ve bilgilendirici olsun
-      - 300-500 kelime arası olsun
-      
-      Konu: ${prompt}`;
-      
+- Markdown formatında olsun
+- Başlık, alt başlıklar içersin
+- Detaylı ve bilgilendirici olsun
+- 300-500 kelime arası olsun
+
+Konu: ${prompt}`;
+
     console.log('API isteği gönderiliyor:', promptText.substring(0, 50) + '...');
-    
+
+    // OpenRouter API çağrısı
+    const fetchPromise = fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
+        'X-Title': 'Yusuf Kaya Portfolio Blog'
+      },
+      body: JSON.stringify({
+        model: 'mistralai/devstral-2512:free',
+        messages: [
+          {
+            role: 'user',
+            content: promptText
+          }
+        ]
+      })
+    });
+
     // Race condition ile timeout kontrolü
-    const generationResult = await Promise.race([
-      model.generateContent(promptText),
+    const response = await Promise.race([
+      fetchPromise,
       timeoutPromise(TIMEOUT_DURATION)
-    ]);
-    
+    ]) as Response;
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenRouter API hatası:', response.status, errorText);
+      throw new Error(`API yanıt hatası: ${response.status}`);
+    }
+
+    const data = await response.json();
+
     // Yanıtı kontrol et ve dön
-    if (generationResult) {
-      const response = await generationResult.response;
-      const text = response.text();
+    if (data.choices && data.choices[0]?.message?.content) {
+      const text = data.choices[0].message.content;
       console.log('API yanıtı alındı:', text.substring(0, 50) + '...');
       return text;
     }
-    
+
     throw new Error('API yanıtı boş geldi');
   } catch (error) {
-    console.error('Gemini API hatası:', error);
+    console.error('OpenRouter API hatası:', error);
     return selectFallbackContent(prompt);
   }
 }
@@ -209,17 +224,17 @@ export async function POST(request: Request) {
 
     // İçerik üretme
     let content;
-    let source = 'gemini'; // Varsayılan olarak API'den geldiğini varsayalım
-    
+    let source = 'openrouter'; // Varsayılan olarak API'den geldiğini varsayalım
+
     try {
       // API anahtarı kontrolü
-      if (!isValidAPIKey(GEMINI_API_KEY)) {
+      if (!isValidAPIKey(OPENROUTER_API_KEY)) {
         console.log('API anahtarı geçerli değil - yedek içerik kullanılıyor');
         content = selectFallbackContent(prompt);
         source = 'fallback_invalid_key';
       } else {
-        // Gemini API ile içerik üretmeyi dene
-        content = await generateContentWithGemini(prompt);
+        // OpenRouter API ile içerik üretmeyi dene
+        content = await generateContentWithOpenRouter(prompt);
       }
     } catch (error: any) {
       // Hata durumunda yedek içerik kullan
@@ -227,25 +242,25 @@ export async function POST(request: Request) {
       content = selectFallbackContent(prompt);
       source = `fallback_error: ${error.message || 'bilinmeyen hata'}`;
     }
-    
+
     // İçerik kontrolü - boş veya çok kısa ise yedek içerik kullan
     if (!content || content.length < 50) {
       console.log('Üretilen içerik çok kısa veya boş - yedek içerik kullanılıyor');
       content = selectFallbackContent(prompt);
       source = 'fallback_short_content';
     }
-    
+
     console.log(`İçerik üretildi - Kaynak: ${source}`);
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       content,
       source
     });
-    
+
   } catch (error: any) {
     console.error('Genel hata:', error.message || error);
     return NextResponse.json(
-      { 
+      {
         error: `Bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`,
         content: selectFallbackContent('genel hata'),
         source: 'error_fallback'

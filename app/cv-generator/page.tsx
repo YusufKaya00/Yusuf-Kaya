@@ -75,7 +75,11 @@ export default function CVGenerator() {
   });
 
   // Şablon seçimi için state
-  const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'modern' | 'minimal' | 'minimal-text' | 'portfolio' | 'portfolio-text' | 'minimal-noexp'>('classic');
+  const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'modern' | 'minimal' | 'simple-text' | 'professional' | 'executive'>('classic');
+
+  // ... (existing code)
+
+
 
   // State for AI prompt
   const [aiPrompt, setAiPrompt] = useState('');
@@ -97,9 +101,9 @@ export default function CVGenerator() {
       // For nested objects like experience, education, skills
       setFormData(prev => {
         const updatedSection = [...prev[section] as any[]];
-        updatedSection[index] = { 
-          ...updatedSection[index], 
-          [field]: value 
+        updatedSection[index] = {
+          ...updatedSection[index],
+          [field]: value
         };
         return { ...prev, [section]: updatedSection };
       });
@@ -121,7 +125,7 @@ export default function CVGenerator() {
   const removeItem = (section: keyof FormData, index: number) => {
     const sectionArray = formData[section] as any[];
     if (sectionArray.length <= 1) return;
-    
+
     setFormData(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).filter((_, i: number) => i !== index)
@@ -134,13 +138,13 @@ export default function CVGenerator() {
       try {
         // Create a deep clone of the CV container to modify it without affecting the UI
         const clonedCv = cvRef.current.cloneNode(true) as HTMLElement;
-        
+
         // Boyutunu A4 kağıdına uygun ayarla
         clonedCv.style.width = '210mm';
         clonedCv.style.minHeight = '297mm';
         clonedCv.style.padding = '10mm';
         clonedCv.style.boxSizing = 'border-box';
-        
+
         // Apply a style reset to remove Tailwind's oklch colors
         const resetStyles = document.createElement('style');
         resetStyles.textContent = `
@@ -176,7 +180,6 @@ export default function CVGenerator() {
           h1 { font-size: 24pt !important; font-weight: bold !important; }
           h2 { font-size: 18pt !important; font-weight: bold !important; }
           h3 { font-size: 14pt !important; font-weight: bold !important; }
-          p, div { font-size: 10pt !important; }
           
           /* Adjust layout for full page */
           .p-8 { padding: 10mm !important; }
@@ -199,8 +202,7 @@ export default function CVGenerator() {
           /* Make full width elements actually full width */
           .w-full { width: 100% !important; }
           
-          /* Force elements to display correctly */
-          div { display: block !important; }
+
           
           /* Set correct margins/spacing */
           body { margin: 0 !important; }
@@ -265,7 +267,7 @@ export default function CVGenerator() {
             margin-bottom: 0.5rem !important;
           }
         `;
-        
+
         // Create a temporary container for rendering
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'absolute';
@@ -276,11 +278,11 @@ export default function CVGenerator() {
         tempContainer.appendChild(resetStyles);
         tempContainer.appendChild(clonedCv);
         document.body.appendChild(tempContainer);
-        
+
         try {
           // Daha yüksek kalite için ölçek faktörünü artır
           const scaleFactor = 2.5; // Yüksek kalite için
-          
+
           // Use html2canvas with specific settings to bypass color function issues
           const canvas = await html2canvas(clonedCv, {
             scale: scaleFactor,
@@ -300,21 +302,21 @@ export default function CVGenerator() {
                   const computedStyle = getComputedStyle(el);
                   const bgColor = computedStyle.backgroundColor;
                   const textColor = computedStyle.color;
-                  
+
                   // Apply computed colors directly as inline styles
                   if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') {
                     el.style.backgroundColor = bgColor;
                   }
-                  
+
                   if (textColor) {
                     el.style.color = textColor;
                   }
-                  
+
                   // CV içeriğinde boşlukları optimize et
                   if (el.tagName === 'DIV' && el.classList.contains('mb-6')) {
                     el.style.marginBottom = '12px';
                   }
-                  
+
                   // Optimize heading sizes
                   if (el.tagName === 'H1') {
                     el.style.fontSize = '24pt';
@@ -328,7 +330,7 @@ export default function CVGenerator() {
                   }
                 }
               });
-              
+
               // CV container'ını düzenle
               const pdfContainer = doc.querySelector('[ref="cvRef"]');
               if (pdfContainer && pdfContainer instanceof HTMLElement) {
@@ -341,10 +343,10 @@ export default function CVGenerator() {
               }
             }
           });
-          
+
           // Create PDF with the canvas
           const imgData = canvas.toDataURL('image/png', 1.0); // Tam kalite
-          
+
           // PDF oluştur
           const pdf = new jspdf({
             orientation: 'portrait',
@@ -352,14 +354,14 @@ export default function CVGenerator() {
             format: 'a4',
             compress: true
           });
-          
+
           // A4 boyutu (mm olarak)
           const pdfWidth = 210;
           const pdfHeight = 297;
-          
+
           // PDF'in tam boyutuna ayarla
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-          
+
           // Download the PDF
           pdf.save(`${formData.fullName || 'cv'}.pdf`);
         } finally {
@@ -375,10 +377,10 @@ export default function CVGenerator() {
     }
   };
 
-  // Generate CV using Qwen AI
+  // Generate CV using AI (OpenRouter - Mistral Devstral)
   const generateWithAI = async () => {
     if (!aiPrompt.trim()) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch('/api/cv-ai-generator', {
@@ -386,11 +388,11 @@ export default function CVGenerator() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: aiPrompt })
       });
-      
+
       if (!response.ok) {
         throw new Error('API request failed');
       }
-      
+
       const data = await response.json();
       if (data.cv) {
         setFormData(data.cv);
@@ -406,17 +408,59 @@ export default function CVGenerator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-gray-200">
-      <div className="container mx-auto px-4 py-16">
+    <div className="relative min-h-screen">
+      {/* Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-purple-900/20 to-black z-0" />
+
+      {/* Floating decorative elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-1">
+        <motion.div
+          animate={{
+            y: [0, -30, 0],
+            rotate: [0, 10, 0]
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            y: [0, 30, 0],
+            rotate: [0, -10, 0]
+          }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-40 right-10 w-48 h-48 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 blur-3xl"
+        />
+        <motion.div
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0]
+          }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 right-1/4 w-24 h-24 rounded-full bg-gradient-to-br from-pink-500/20 to-indigo-500/20 blur-3xl"
+        />
+      </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-16">
+        {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl font-bold text-white mb-4">CV Oluşturucu</h1>
-          <p className="text-xl text-gray-300">
-            Profesyonel, metin tabanlı CV'nizi kolayca oluşturun
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="inline-block px-4 py-2 rounded-full backdrop-blur-md bg-white/5 border border-purple-500/30 mb-4"
+          >
+            <span className="text-purple-400 text-sm font-medium">CV Generator</span>
+          </motion.div>
+          <h1 className="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 mb-4">
+            CV Oluşturucu
+          </h1>
+          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            Profesyonel CV'nizi AI destekli araçlarla kolayca oluşturun
           </p>
         </motion.div>
 
@@ -426,15 +470,22 @@ export default function CVGenerator() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gray-800 rounded-xl p-6 shadow-xl"
+            className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 shadow-2xl border border-white/10"
           >
             <h2 className="text-2xl font-semibold mb-6 text-white">Bilgileri Girin</h2>
 
             {/* AI Generator */}
-            <div className="mb-8 border border-gray-700 rounded-lg p-4 bg-gray-900">
-              <h3 className="text-xl font-medium mb-3 text-indigo-400">Gemini AI ile Otomatik Oluşturma</h3>
+            <div className="mb-8 rounded-xl p-5 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/20">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-purple-500/20">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-medium text-purple-300">AI ile Otomatik Oluşturma</h3>
+              </div>
               <div className="mb-4">
-                <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-300 mb-1">
+                <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-300 mb-2">
                   Deneyimleriniz hakkında birkaç cümle yazın:
                 </label>
                 <textarea
@@ -442,25 +493,34 @@ export default function CVGenerator() {
                   rows={4}
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
                   placeholder="Yazılım mühendisiyim, 5 yıl deneyimim var, React ve Node.js ile çalışıyorum..."
                 />
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={generateWithAI}
                 disabled={isLoading}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25"
               >
                 {isLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                     İşleniyor...
                   </span>
-                ) : "AI ile Otomatik Doldur"}
-              </button>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    AI ile Otomatik Doldur
+                  </>
+                )}
+              </motion.button>
             </div>
 
             {/* Form fields */}
@@ -468,7 +528,7 @@ export default function CVGenerator() {
               {/* Personal Details */}
               <div className="space-y-4">
                 <h3 className="text-xl font-medium text-white">Kişisel Bilgiler</h3>
-                
+
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
@@ -480,10 +540,10 @@ export default function CVGenerator() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
                       Ünvan
@@ -494,10 +554,10 @@ export default function CVGenerator() {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="location" className="block text-sm font-medium text-gray-300 mb-1">
                       Konum
@@ -508,11 +568,11 @@ export default function CVGenerator() {
                       name="location"
                       value={formData.location}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       placeholder="İstanbul, Türkiye"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                       E-posta
@@ -523,11 +583,11 @@ export default function CVGenerator() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       placeholder="ornek@email.com"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
                       Telefon
@@ -538,20 +598,20 @@ export default function CVGenerator() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       placeholder="+90 555 123 4567"
                     />
                   </div>
                 </div>
               </div>
-              
+
               {/* Experience Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-medium text-white">İş Deneyimi</h3>
                   <button
                     onClick={() => addItem('experience', { position: '', company: '', period: '', details: '' })}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -559,9 +619,9 @@ export default function CVGenerator() {
                     Deneyim Ekle
                   </button>
                 </div>
-                
+
                 {formData.experience.map((exp, index) => (
-                  <div key={index} className="border border-gray-700 rounded-lg p-4 bg-gray-900 space-y-3">
+                  <div key={index} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
                       {formData.experience.length > 1 && (
@@ -573,7 +633,7 @@ export default function CVGenerator() {
                         </button>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -583,10 +643,10 @@ export default function CVGenerator() {
                           type="text"
                           value={exp.position}
                           onChange={(e) => handleInputChange(e, 'experience', index, 'position')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
                           Şirket
@@ -595,10 +655,10 @@ export default function CVGenerator() {
                           type="text"
                           value={exp.company}
                           onChange={(e) => handleInputChange(e, 'experience', index, 'company')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
                           Dönem
@@ -607,12 +667,12 @@ export default function CVGenerator() {
                           type="text"
                           value={exp.period}
                           onChange={(e) => handleInputChange(e, 'experience', index, 'period')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="Eki 2019 - Günümüz"
                         />
                       </div>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
                         Detaylar
@@ -621,21 +681,21 @@ export default function CVGenerator() {
                         rows={3}
                         value={exp.details}
                         onChange={(e) => handleInputChange(e, 'experience', index, 'details')}
-                        className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         placeholder="Bu pozisyondaki görev ve başarılarınız..."
                       />
                     </div>
                   </div>
                 ))}
               </div>
-              
+
               {/* Education Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-medium text-white">Eğitim</h3>
                   <button
                     onClick={() => addItem('education', { degree: '', school: '', period: '', gpa: '' })}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -643,9 +703,9 @@ export default function CVGenerator() {
                     Eğitim Ekle
                   </button>
                 </div>
-                
+
                 {formData.education.map((edu, index) => (
-                  <div key={index} className="border border-gray-700 rounded-lg p-4 bg-gray-900 space-y-3">
+                  <div key={index} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
                       {formData.education.length > 1 && (
@@ -657,7 +717,7 @@ export default function CVGenerator() {
                         </button>
                       )}
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -667,10 +727,10 @@ export default function CVGenerator() {
                           type="text"
                           value={edu.degree}
                           onChange={(e) => handleInputChange(e, 'education', index, 'degree')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
                           Okul
@@ -679,10 +739,10 @@ export default function CVGenerator() {
                           type="text"
                           value={edu.school}
                           onChange={(e) => handleInputChange(e, 'education', index, 'school')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
                           Dönem
@@ -691,11 +751,11 @@ export default function CVGenerator() {
                           type="text"
                           value={edu.period}
                           onChange={(e) => handleInputChange(e, 'education', index, 'period')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="2015 - 2019"
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
                           Not Ortalaması
@@ -704,7 +764,7 @@ export default function CVGenerator() {
                           type="text"
                           value={edu.gpa}
                           onChange={(e) => handleInputChange(e, 'education', index, 'gpa')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="3.8/4.0"
                         />
                       </div>
@@ -712,14 +772,14 @@ export default function CVGenerator() {
                   </div>
                 ))}
               </div>
-              
+
               {/* Skills Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-medium text-white">Beceriler</h3>
                   <button
                     onClick={() => addItem('skills', { category: '', level: '' })}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -727,10 +787,10 @@ export default function CVGenerator() {
                     Beceri Ekle
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {formData.skills.map((skill, index) => (
-                    <div key={index} className="border border-gray-700 rounded-lg p-3 bg-gray-900 flex justify-between items-center">
+                    <div key={index} className="border border-white/10 rounded-xl p-3 bg-black/20 flex justify-between items-center">
                       <div className="space-y-2 w-full">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
@@ -743,20 +803,20 @@ export default function CVGenerator() {
                             </button>
                           )}
                         </div>
-                        
+
                         <input
                           type="text"
                           value={skill.category}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'category')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="Beceri adı"
                         />
-                        
+
                         <input
                           type="text"
                           value={skill.level}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'level')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="Deneyimli, Başlangıç, vb."
                         />
                       </div>
@@ -771,7 +831,7 @@ export default function CVGenerator() {
                   <h3 className="text-xl font-medium text-white">Diller</h3>
                   <button
                     onClick={() => addItem('languages', { name: '', level: '' })}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -779,10 +839,10 @@ export default function CVGenerator() {
                     Dil Ekle
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {formData.languages.map((language, index) => (
-                    <div key={index} className="border border-gray-700 rounded-lg p-3 bg-gray-900 flex justify-between items-center">
+                    <div key={index} className="border border-white/10 rounded-xl p-3 bg-black/20 flex justify-between items-center">
                       <div className="space-y-2 w-full">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
@@ -795,20 +855,20 @@ export default function CVGenerator() {
                             </button>
                           )}
                         </div>
-                        
+
                         <input
                           type="text"
                           value={language.name}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'name')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="İngilizce, Türkçe, vb."
                         />
-                        
+
                         <input
                           type="text"
                           value={language.level}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'level')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="Akıcı, Orta, Başlangıç"
                         />
                       </div>
@@ -823,7 +883,7 @@ export default function CVGenerator() {
                   <h3 className="text-xl font-medium text-white">Bağlantılar</h3>
                   <button
                     onClick={() => addItem('links', { name: '', url: '' })}
-                    className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                    className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -831,10 +891,10 @@ export default function CVGenerator() {
                     Bağlantı Ekle
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {formData.links.map((link, index) => (
-                    <div key={index} className="border border-gray-700 rounded-lg p-3 bg-gray-900 flex justify-between items-center">
+                    <div key={index} className="border border-white/10 rounded-xl p-3 bg-black/20 flex justify-between items-center">
                       <div className="space-y-2 w-full">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-400">#{index + 1}</span>
@@ -847,20 +907,20 @@ export default function CVGenerator() {
                             </button>
                           )}
                         </div>
-                        
+
                         <input
                           type="text"
                           value={link.name}
                           onChange={(e) => handleInputChange(e, 'links', index, 'name')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="LinkedIn, Github, vb."
                         />
-                        
+
                         <input
                           type="text"
                           value={link.url}
                           onChange={(e) => handleInputChange(e, 'links', index, 'url')}
-                          className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                           placeholder="https://..."
                         />
                       </div>
@@ -876,7 +936,7 @@ export default function CVGenerator() {
                     <h3 className="text-xl font-medium text-white">Projelerim</h3>
                     <button
                       onClick={() => addItem('projects', { name: '', description: '', tags: '' })}
-                      className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center"
+                      className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -884,10 +944,10 @@ export default function CVGenerator() {
                       Proje Ekle
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 gap-4">
                     {formData.projects.map((project, index) => (
-                      <div key={index} className="border border-gray-700 rounded-lg p-4 bg-gray-900 space-y-3">
+                      <div key={index} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-400">Proje #{index + 1}</span>
                           {formData.projects.length > 1 && (
@@ -899,7 +959,7 @@ export default function CVGenerator() {
                             </button>
                           )}
                         </div>
-                        
+
                         <div className="space-y-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -909,11 +969,11 @@ export default function CVGenerator() {
                               type="text"
                               value={project.name}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'name')}
-                              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                               placeholder="Projenin adı"
                             />
                           </div>
-                          
+
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
                               Açıklama
@@ -922,11 +982,11 @@ export default function CVGenerator() {
                               rows={3}
                               value={project.description}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'description')}
-                              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                               placeholder="Proje hakkında kısa açıklama"
                             />
                           </div>
-                          
+
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
                               Etiketler
@@ -935,7 +995,7 @@ export default function CVGenerator() {
                               type="text"
                               value={project.tags}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'tags')}
-                              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                              className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                               placeholder="React, TypeScript, Node.js (virgülle ayırın)"
                             />
                           </div>
@@ -955,155 +1015,163 @@ export default function CVGenerator() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="flex flex-col"
           >
-            <div className="bg-gray-800 rounded-xl p-6 shadow-xl mb-4">
-              <div className="flex justify-between items-center mb-6">
+            <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 shadow-2xl border border-white/10 mb-4">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
                 <h2 className="text-2xl font-semibold text-white">Önizleme</h2>
-                <div className="flex items-center space-x-2">
-                  <div className="flex flex-wrap space-x-2 mr-4">
-                    <button 
+                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    <button
                       onClick={() => setSelectedTemplate('classic')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'classic' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'classic'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
                     >
                       Klasik
                     </button>
-                    <button 
+                    <button
                       onClick={() => setSelectedTemplate('modern')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'modern' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'modern'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
                     >
                       Modern
                     </button>
-                    <button 
+                    <button
+                      onClick={() => setSelectedTemplate('professional')}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'professional'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
+                    >
+                      Profesyonel
+                    </button>
+                    <button
+                      onClick={() => setSelectedTemplate('executive')}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'executive'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
+                    >
+                      Yönetici
+                    </button>
+                    <button
                       onClick={() => setSelectedTemplate('minimal')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'minimal' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'minimal'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
                     >
                       Minimal
                     </button>
-                    <button 
-                      onClick={() => setSelectedTemplate('minimal-text')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'minimal-text' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                    <button
+                      onClick={() => setSelectedTemplate('simple-text')}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selectedTemplate === 'simple-text'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
+                        : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
+                        }`}
                     >
-                      Minimal Text
-                    </button>
-                    <button 
-                      onClick={() => setSelectedTemplate('portfolio')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'portfolio' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      Portfolio
-                    </button>
-                    <button 
-                      onClick={() => setSelectedTemplate('portfolio-text')}
-                      className={`px-3 py-1 mb-2 rounded-md text-sm font-medium ${
-                        selectedTemplate === 'portfolio-text' 
-                        ? 'bg-indigo-600 text-white' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                    >
-                      Portfolio Text
+                      Sade Metin
                     </button>
                   </div>
-                  
-                  <button
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={generatePDF}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors"
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white py-2.5 px-5 rounded-xl font-medium transition-all flex items-center gap-2 shadow-lg shadow-green-500/25"
                   >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
                     PDF İndir
-                  </button>
+                  </motion.button>
                 </div>
               </div>
-              
-              <div 
-                ref={cvRef} 
+
+              <div
+                ref={cvRef}
                 className="bg-white text-black font-serif p-8 rounded-md shadow-lg min-h-[297mm] max-w-[210mm] mx-auto overflow-hidden"
                 style={{ maxHeight: '80vh', overflowY: 'auto' }}
               >
                 {selectedTemplate === 'classic' && (
-                  <div className="p-6 font-sans">
-                    <div className="mb-6 border-b pb-6">
-                      <h1 className="text-2xl font-bold text-gray-900 mb-1">{formData.fullName || 'Ad Soyad'}</h1>
-                      <p className="text-lg text-gray-700 mb-2">{formData.title || 'Pozisyon'}</p>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                        {formData.location && <div>{formData.location}</div>}
-                        {formData.email && <div>{formData.email}</div>}
-                        {formData.phone && <div>{formData.phone}</div>}
+                  <div style={{ padding: '24px', fontFamily: 'Arial, sans-serif', color: '#000000', backgroundColor: '#ffffff' }}>
+                    {/* Header */}
+                    <div style={{ marginBottom: '24px', borderBottom: '2px solid #e5e7eb', paddingBottom: '20px' }}>
+                      <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#111827', marginBottom: '4px', margin: 0 }}>
+                        {formData.fullName || 'Ad Soyad'}
+                      </h1>
+                      <p style={{ fontSize: '18px', color: '#4b5563', marginBottom: '12px', margin: '8px 0' }}>
+                        {formData.title || 'Pozisyon'}
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
+                        {formData.location && <span>📍 {formData.location}</span>}
+                        {formData.email && <span>✉️ {formData.email}</span>}
+                        {formData.phone && <span>📞 {formData.phone}</span>}
                         {formData.links.map((link, index) => (
-                          <div key={index}>{link.name}: {link.url}</div>
+                          <span key={index}>🔗 {link.name}: {link.url}</span>
                         ))}
                       </div>
                     </div>
-                    
-                    {/* Experience Section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold border-b border-gray-300 pb-1 mb-4">İş Deneyimi</h2>
+
+                    {/* Experience */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
+                        İŞ DENEYİMİ
+                      </h2>
                       {formData.experience.map((exp, index) => (
-                        <div key={index} className="mb-4">
-                          <div className="flex justify-between">
-                            <div className="font-semibold">{exp.position || 'Pozisyon'}</div>
-                            <div className="text-gray-600">{exp.period || 'Dönem'}</div>
+                        <div key={index} style={{ marginBottom: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{exp.position || 'Pozisyon'}</span>
+                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{exp.period || 'Dönem'}</span>
                           </div>
-                          <div className="text-gray-800 mb-1">{exp.company || 'Şirket'}</div>
-                          <div className="text-sm text-gray-700 whitespace-pre-line">
+                          <div style={{ fontSize: '15px', color: '#374151', marginBottom: '4px' }}>{exp.company || 'Şirket'}</div>
+                          <div style={{ fontSize: '14px', color: '#4b5563', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
                             {exp.details || 'Detaylar...'}
                           </div>
                         </div>
                       ))}
                     </div>
-                    
-                    {/* Education Section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold border-b border-gray-300 pb-1 mb-4">Eğitim</h2>
+
+                    {/* Education */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
+                        EĞİTİM
+                      </h2>
                       {formData.education.map((edu, index) => (
-                        <div key={index} className="mb-4">
-                          <div className="flex justify-between">
-                            <div className="font-semibold">{edu.degree || 'Derece'}</div>
-                            <div className="text-gray-600">{edu.period || 'Dönem'}</div>
+                        <div key={index} style={{ marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{edu.degree || 'Derece'}</span>
+                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{edu.period || 'Dönem'}</span>
                           </div>
-                          <div className="text-gray-800 mb-1">{edu.school || 'Okul'}</div>
-                          {edu.gpa && <div className="text-sm text-gray-700">Not: {edu.gpa}</div>}
+                          <div style={{ fontSize: '15px', color: '#374151' }}>{edu.school || 'Okul'}</div>
+                          {edu.gpa && <div style={{ fontSize: '14px', color: '#6b7280' }}>Not Ortalaması: {edu.gpa}</div>}
                         </div>
                       ))}
                     </div>
-                    
-                    {/* Skills Section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold border-b border-gray-300 pb-1 mb-4">Beceriler</h2>
-                      <div className="grid grid-cols-2 gap-2">
+
+                    {/* Skills & Languages */}
+                    <div style={{ display: 'flex', gap: '32px' }}>
+                      <div style={{ flex: 1 }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
+                          BECERİLER
+                        </h2>
                         {formData.skills.map((skill, index) => (
-                          <div key={index} className="mb-1">
-                            <span className="font-medium">{skill.category || 'Beceri'}: </span>
-                            <span className="text-gray-700">{skill.level || 'Seviye'}</span>
+                          <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
+                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{skill.category || 'Beceri'}</span>
+                            <span style={{ color: '#6b7280' }}> - {skill.level || 'Seviye'}</span>
                           </div>
                         ))}
                       </div>
-                    </div>
-                    
-                    {/* Languages Section */}
-                    <div className="mb-6">
-                      <h2 className="text-xl font-bold border-b border-gray-300 pb-1 mb-4">Diller</h2>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div style={{ flex: 1 }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
+                          DİLLER
+                        </h2>
                         {formData.languages.map((language, index) => (
-                          <div key={index} className="mb-1">
-                            <span className="font-medium">{language.name || 'Dil'}: </span>
-                            <span className="text-gray-700">{language.level || 'Seviye'}</span>
+                          <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
+                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{language.name || 'Dil'}</span>
+                            <span style={{ color: '#6b7280' }}> - {language.level || 'Seviye'}</span>
                           </div>
                         ))}
                       </div>
@@ -1112,109 +1180,114 @@ export default function CVGenerator() {
                 )}
 
                 {selectedTemplate === 'modern' && (
-                  <div className="font-sans">
-                    <div className="bg-indigo-600 text-white p-8">
-                      <h1 className="text-3xl font-bold mb-2">{formData.fullName || 'Ad Soyad'}</h1>
-                      <p className="text-xl mb-4">{formData.title || 'Pozisyon'}</p>
-                      <div className="flex flex-wrap gap-6 text-sm">
-                        {formData.location && <div className="flex items-center"><svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> {formData.location}</div>}
-                        {formData.email && <div className="flex items-center"><svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> {formData.email}</div>}
-                        {formData.phone && <div className="flex items-center"><svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg> {formData.phone}</div>}
+                  <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff' }}>
+                    {/* Header with gradient */}
+                    <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: '#ffffff', padding: '32px' }}>
+                      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', margin: 0 }}>
+                        {formData.fullName || 'Ad Soyad'}
+                      </h1>
+                      <p style={{ fontSize: '20px', marginBottom: '16px', margin: '8px 0 16px 0', opacity: 0.9 }}>
+                        {formData.title || 'Pozisyon'}
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '14px' }}>
+                        {formData.location && <span>📍 {formData.location}</span>}
+                        {formData.email && <span>✉️ {formData.email}</span>}
+                        {formData.phone && <span>📞 {formData.phone}</span>}
                       </div>
                     </div>
-                    
-                    <div className="p-8">
-                      <div className="grid grid-cols-12 gap-8">
-                        <div className="col-span-8">
-                          {/* Experience */}
-                          <div className="mb-8">
-                            <h2 className="text-lg font-bold text-indigo-600 border-b border-indigo-200 pb-2 mb-4">İŞ DENEYİMİ</h2>
-                            {formData.experience.map((exp, index) => (
-                              <div key={index} className="mb-5">
-                                <h3 className="font-bold text-gray-800">{exp.position || 'Pozisyon'}</h3>
-                                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                  <div>{exp.company || 'Şirket'}</div>
-                                  <div>{exp.period || 'Dönem'}</div>
-                                </div>
-                                <p className="text-sm text-gray-700 whitespace-pre-line">{exp.details || 'Detaylar...'}</p>
+
+                    {/* Two column layout */}
+                    <div style={{ display: 'flex', padding: '24px' }}>
+                      {/* Main content */}
+                      <div style={{ flex: 2, paddingRight: '24px' }}>
+                        {/* Experience */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                            İş Deneyimi
+                          </h2>
+                          {formData.experience.map((exp, index) => (
+                            <div key={index} style={{ marginBottom: '20px' }}>
+                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position || 'Pozisyon'}</h3>
+                              <div style={{ display: 'table', width: '100%', margin: '4px 0', fontSize: '14px', color: '#6b7280' }}>
+                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{exp.company || 'Şirket'}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{exp.period || 'Dönem'}</div>
                               </div>
-                            ))}
-                          </div>
-                          
-                          {/* Education */}
-                          <div className="mb-8">
-                            <h2 className="text-lg font-bold text-indigo-600 border-b border-indigo-200 pb-2 mb-4">EĞİTİM</h2>
-                            {formData.education.map((edu, index) => (
-                              <div key={index} className="mb-4">
-                                <h3 className="font-bold text-gray-800">{edu.degree || 'Derece'}</h3>
-                                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                  <div>{edu.school || 'Okul'}</div>
-                                  <div>{edu.period || 'Dönem'}</div>
-                                </div>
-                                {edu.gpa && <p className="text-sm text-gray-700">Not: {edu.gpa}</p>}
-                              </div>
-                            ))}
-                          </div>
+                              <p style={{ fontSize: '14px', color: '#4b5563', whiteSpace: 'pre-line', lineHeight: '1.5', margin: '8px 0 0 0' }}>{exp.details || 'Detaylar...'}</p>
+                            </div>
+                          ))}
                         </div>
-                        
-                        <div className="col-span-4">
-                          {/* Skills */}
-                          <div className="mb-8">
-                            <h2 className="text-lg font-bold text-indigo-600 border-b border-indigo-200 pb-2 mb-4">BECERİLER</h2>
-                            <ul className="space-y-2">
-                              {formData.skills.map((skill, index) => (
-                                <li key={index} className="text-gray-700">
-                                  <span className="font-medium">{skill.category || 'Beceri'}</span>
-                                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                    <div 
-                                      className="bg-indigo-600 h-1.5 rounded-full" 
-                                      style={{ 
-                                        width: skill.level === 'İleri' ? '90%' : 
-                                              skill.level === 'Orta' ? '60%' : 
-                                              skill.level === 'Başlangıç' ? '30%' : '50%' 
-                                      }}
-                                    ></div>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          {/* Languages */}
-                          <div className="mb-8">
-                            <h2 className="text-lg font-bold text-indigo-600 border-b border-indigo-200 pb-2 mb-4">DİLLER</h2>
-                            <ul className="space-y-2">
-                              {formData.languages.map((language, index) => (
-                                <li key={index} className="text-gray-700">
-                                  <span className="font-medium">{language.name || 'Dil'}</span>
-                                  <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                    <div 
-                                      className="bg-indigo-600 h-1.5 rounded-full" 
-                                      style={{ 
-                                        width: language.level === 'Anadil' ? '100%' : 
-                                              language.level === 'İleri' ? '90%' : 
-                                              language.level === 'Orta' ? '60%' : 
-                                              language.level === 'Başlangıç' ? '30%' : '50%' 
-                                      }}
-                                    ></div>
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                          
-                          {/* Links */}
-                          <div className="mb-8">
-                            <h2 className="text-lg font-bold text-indigo-600 border-b border-indigo-200 pb-2 mb-4">BAĞLANTILAR</h2>
-                            <ul className="space-y-2">
-                              {formData.links.map((link, index) => (
-                                <li key={index} className="text-gray-700 break-words">
-                                  <span className="font-medium">{link.name || 'Platform'}: </span>
-                                  <span className="text-indigo-600">{link.url || 'URL'}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+
+                        {/* Education */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                            Eğitim
+                          </h2>
+                          {formData.education.map((edu, index) => (
+                            <div key={index} style={{ marginBottom: '16px' }}>
+                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree || 'Derece'}</h3>
+                              <div style={{ display: 'table', width: '100%', margin: '4px 0', fontSize: '14px', color: '#6b7280' }}>
+                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{edu.school || 'Okul'}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{edu.period || 'Dönem'}</div>
+                              </div>
+                              {edu.gpa && <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0' }}>Not: {edu.gpa}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Sidebar */}
+                      <div style={{ flex: 1, borderLeft: '1px solid #e5e7eb', paddingLeft: '24px' }}>
+                        {/* Skills */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                            Beceriler
+                          </h2>
+                          {formData.skills.map((skill, index) => (
+                            <div key={index} style={{ marginBottom: '12px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{skill.category || 'Beceri'}</div>
+                              <div style={{ height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{
+                                  height: '100%',
+                                  backgroundColor: '#6366f1',
+                                  borderRadius: '3px',
+                                  width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : skill.level === 'Başlangıç' ? '30%' : '70%'
+                                }}></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Languages */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                            Diller
+                          </h2>
+                          {formData.languages.map((language, index) => (
+                            <div key={index} style={{ marginBottom: '12px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{language.name || 'Dil'}</div>
+                              <div style={{ height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{
+                                  height: '100%',
+                                  backgroundColor: '#6366f1',
+                                  borderRadius: '3px',
+                                  width: language.level === 'Anadil' ? '100%' : language.level === 'İleri' ? '90%' : language.level === 'Orta' ? '60%' : '40%'
+                                }}></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Links */}
+                        <div>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
+                            Bağlantılar
+                          </h2>
+                          {formData.links.map((link, index) => (
+                            <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
+                              <span style={{ fontWeight: '500', color: '#1f2937' }}>{link.name}: </span>
+                              <span style={{ color: '#6366f1', wordBreak: 'break-all' }}>{link.url}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1226,12 +1299,12 @@ export default function CVGenerator() {
                     <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
                       <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
                       <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || 'Pozisyon'}</p>
-                      
+
                       <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                         {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Adres: {formData.location}</div>}
                         {formData.email && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>E-posta: {formData.email}</div>}
                         {formData.phone && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Telefon: {formData.phone}</div>}
-                        
+
                         {formData.links.map((link, index) => (
                           <div key={index} style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>
                             {link.name}: {link.url}
@@ -1246,12 +1319,12 @@ export default function CVGenerator() {
                     {formData.experience.length > 0 && (
                       <div style={{ marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>İŞ DENEYİMİ</h2>
-                        
+
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || 'Pozisyon'}</div>
-                              <div style={{ fontSize: '10pt' }}>{exp.period || 'Dönem'}</div>
+                            <div style={{ display: 'table', width: '100%' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left', fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || 'Pozisyon'}</div>
+                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '10pt', whiteSpace: 'nowrap', width: '1%' }}>{exp.period || 'Dönem'}</div>
                             </div>
                             <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{exp.company || 'Şirket'}</div>
                             <div style={{ fontSize: '10pt' }}>{exp.details || 'Detaylar'}</div>
@@ -1264,12 +1337,12 @@ export default function CVGenerator() {
                     {formData.education.length > 0 && (
                       <div style={{ marginBottom: '1.5rem' }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
-                        
+
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</div>
-                              <div style={{ fontSize: '10pt' }}>{edu.period || 'Dönem'}</div>
+                            <div style={{ display: 'table', width: '100%' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left', fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</div>
+                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '10pt', whiteSpace: 'nowrap', width: '1%' }}>{edu.period || 'Dönem'}</div>
                             </div>
                             <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{edu.school || 'Okul'}</div>
                             {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
@@ -1284,7 +1357,7 @@ export default function CVGenerator() {
                       {formData.skills.length > 0 && (
                         <div style={{ flex: 1 }}>
                           <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>BECERİLER</h2>
-                          
+
                           {formData.skills.map((skill, index) => (
                             <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                               <span>{skill.category || 'Beceri'}</span>
@@ -1298,7 +1371,7 @@ export default function CVGenerator() {
                       {formData.languages.length > 0 && (
                         <div style={{ flex: 1 }}>
                           <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>DİLLER</h2>
-                          
+
                           {formData.languages.map((language, index) => (
                             <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                               <span>{language.name || 'Dil'}</span>
@@ -1311,17 +1384,213 @@ export default function CVGenerator() {
                   </div>
                 )}
 
+                {/* Professional Template - Clean with sidebar */}
+                {selectedTemplate === 'professional' && (
+                  <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff', display: 'flex' }}>
+                    {/* Left Sidebar */}
+                    <div style={{ width: '35%', backgroundColor: '#1e3a5f', color: '#ffffff', padding: '24px' }}>
+                      {/* Profile */}
+                      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#ffffff', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '32px', color: '#1e3a5f', fontWeight: 'bold' }}>
+                            {formData.fullName?.charAt(0) || 'A'}
+                          </span>
+                        </div>
+                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, marginBottom: '8px' }}>
+                          {formData.fullName || 'Ad Soyad'}
+                        </h1>
+                        <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
+                          {formData.title || 'Pozisyon'}
+                        </p>
+                      </div>
+
+                      {/* Contact */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          İletişim
+                        </h2>
+                        {formData.email && <div style={{ fontSize: '12px', marginBottom: '8px' }}>✉️ {formData.email}</div>}
+                        {formData.phone && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📞 {formData.phone}</div>}
+                        {formData.location && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📍 {formData.location}</div>}
+                      </div>
+
+                      {/* Skills */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          Beceriler
+                        </h2>
+                        {formData.skills.map((skill, index) => (
+                          <div key={index} style={{ marginBottom: '10px' }}>
+                            <div style={{ fontSize: '12px', marginBottom: '4px' }}>{skill.category}</div>
+                            <div style={{ height: '4px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}>
+                              <div style={{
+                                height: '100%',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '2px',
+                                width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : '40%'
+                              }}></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Languages */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          Diller
+                        </h2>
+                        {formData.languages.map((language, index) => (
+                          <div key={index} style={{ fontSize: '12px', marginBottom: '6px' }}>
+                            <span style={{ fontWeight: '500' }}>{language.name}</span>
+                            <span style={{ opacity: 0.8 }}> - {language.level}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Links */}
+                      {formData.links.length > 0 && (
+                        <div>
+                          <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                            Bağlantılar
+                          </h2>
+                          {formData.links.map((link, index) => (
+                            <div key={index} style={{ fontSize: '11px', marginBottom: '6px', wordBreak: 'break-all' }}>
+                              {link.name}: {link.url}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Content */}
+                    <div style={{ flex: 1, padding: '24px' }}>
+                      {/* Experience */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
+                          İŞ DENEYİMİ
+                        </h2>
+                        {formData.experience.map((exp, index) => (
+                          <div key={index} style={{ marginBottom: '16px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position}</h3>
+                            <div style={{ fontSize: '14px', color: '#1e3a5f', fontWeight: '500', margin: '4px 0' }}>{exp.company}</div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>{exp.period}</div>
+                            <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Education */}
+                      <div>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
+                          EĞİTİM
+                        </h2>
+                        {formData.education.map((edu, index) => (
+                          <div key={index} style={{ marginBottom: '12px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
+                            <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree}</h3>
+                            <div style={{ fontSize: '14px', color: '#1e3a5f', margin: '4px 0' }}>{edu.school}</div>
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>{edu.period}</div>
+                            {edu.gpa && <div style={{ fontSize: '12px', color: '#6b7280' }}>Not: {edu.gpa}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Executive Template - Elegant for senior positions */}
+                {selectedTemplate === 'executive' && (
+                  <div style={{ fontFamily: 'Georgia, serif', backgroundColor: '#ffffff' }}>
+                    {/* Elegant Header */}
+                    <div style={{ backgroundColor: '#1a1a2e', color: '#ffffff', padding: '40px 32px', textAlign: 'center' }}>
+                      <h1 style={{ fontSize: '36px', fontWeight: 'normal', letterSpacing: '4px', margin: 0, marginBottom: '8px', textTransform: 'uppercase' }}>
+                        {formData.fullName || 'Ad Soyad'}
+                      </h1>
+                      <div style={{ width: '60px', height: '2px', backgroundColor: '#c9a227', margin: '16px auto' }}></div>
+                      <p style={{ fontSize: '18px', letterSpacing: '2px', margin: 0, color: '#c9a227', textTransform: 'uppercase' }}>
+                        {formData.title || 'Pozisyon'}
+                      </p>
+                    </div>
+
+                    {/* Contact Bar */}
+                    <div style={{ backgroundColor: '#f8f8f8', padding: '16px 32px', display: 'flex', justifyContent: 'center', gap: '32px', fontSize: '13px', color: '#4a4a4a', borderBottom: '1px solid #e0e0e0' }}>
+                      {formData.email && <span>✉ {formData.email}</span>}
+                      {formData.phone && <span>☎ {formData.phone}</span>}
+                      {formData.location && <span>⌂ {formData.location}</span>}
+                    </div>
+
+                    {/* Main Content */}
+                    <div style={{ padding: '32px' }}>
+                      {/* Experience */}
+                      <div style={{ marginBottom: '32px' }}>
+                        <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                          Profesyonel Deneyim
+                        </h2>
+                        {formData.experience.map((exp, index) => (
+                          <div key={index} style={{ marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                              <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1a1a2e', margin: 0 }}>{exp.position}</h3>
+                              <span style={{ fontSize: '13px', color: '#666666', fontStyle: 'italic' }}>{exp.period}</span>
+                            </div>
+                            <div style={{ fontSize: '14px', color: '#c9a227', fontWeight: '500', margin: '4px 0 8px 0' }}>{exp.company}</div>
+                            <p style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Two Columns */}
+                      <div style={{ display: 'flex', gap: '40px' }}>
+                        {/* Education */}
+                        <div style={{ flex: 1 }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                            Eğitim
+                          </h2>
+                          {formData.education.map((edu, index) => (
+                            <div key={index} style={{ marginBottom: '12px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1a1a2e' }}>{edu.degree}</div>
+                              <div style={{ fontSize: '13px', color: '#666666' }}>{edu.school}</div>
+                              <div style={{ fontSize: '12px', color: '#888888', fontStyle: 'italic' }}>{edu.period}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Skills & Languages */}
+                        <div style={{ flex: 1 }}>
+                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                            Uzmanlık Alanları
+                          </h2>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+                            {formData.skills.map((skill, index) => (
+                              <span key={index} style={{ fontSize: '12px', padding: '4px 12px', backgroundColor: '#f0f0f0', borderRadius: '4px', color: '#1a1a2e' }}>
+                                {skill.category}
+                              </span>
+                            ))}
+                          </div>
+
+                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                            Diller
+                          </h2>
+                          {formData.languages.map((language, index) => (
+                            <div key={index} style={{ fontSize: '13px', marginBottom: '6px', color: '#4a4a4a' }}>
+                              <span style={{ fontWeight: '500' }}>{language.name}</span> — {language.level}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {selectedTemplate === 'minimal-text' && (
                   <div className="p-8 font-serif">
                     <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
                       <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
                       <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || 'Pozisyon'}</p>
-                      
+
                       <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                         {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Adres: {formData.location}</div>}
                         {formData.email && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>E-posta: {formData.email}</div>}
                         {formData.phone && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Telefon: {formData.phone}</div>}
-                        
+
                         {formData.links.map((link, index) => (
                           <div key={index} style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>
                             {link.name}: {link.url}
@@ -1340,7 +1609,7 @@ export default function CVGenerator() {
                         {formData.skills.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>BECERİLER</h2>
-                            
+
                             {formData.skills.map((skill, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span>{skill.category || 'Beceri'}</span>
@@ -1354,7 +1623,7 @@ export default function CVGenerator() {
                         {formData.languages.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>DİLLER</h2>
-                            
+
                             {formData.languages.map((language, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span>{language.name || 'Dil'}</span>
@@ -1368,12 +1637,12 @@ export default function CVGenerator() {
                         {formData.projects.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>PROJELER</h2>
-                            
+
                             {formData.projects.map((project, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
                                 <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{project.name || 'Proje Adı'}</div>
                                 <p style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{project.description || 'Proje açıklaması'}</p>
-                                
+
                                 {project.tags && (
                                   <div style={{ fontSize: '9pt' }}>
                                     <span style={{ fontStyle: 'italic' }}>Teknolojiler: </span>
@@ -1392,7 +1661,7 @@ export default function CVGenerator() {
                         {formData.experience.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>İŞ DENEYİMİ</h2>
-                            
+
                             {formData.experience.map((exp, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1410,7 +1679,7 @@ export default function CVGenerator() {
                         {formData.education.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
-                            
+
                             {formData.education.map((edu, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1468,7 +1737,7 @@ export default function CVGenerator() {
                             ))}
                           </div>
                         </div>
-                        
+
                         <div className="mb-6">
                           <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">YETENEKLER</h2>
                           <div className="text-sm space-y-3">
@@ -1574,13 +1843,13 @@ export default function CVGenerator() {
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                       <h1 style={{ fontSize: '18pt', fontWeight: 'bold', marginBottom: '0.5rem' }}>{formData.fullName || 'AD SOYAD'}</h1>
                       <p style={{ fontSize: '12pt', marginBottom: '1rem' }}>{formData.title || 'Pozisyon'}</p>
-                      
+
                       <div style={{ fontSize: '10pt' }}>
                         {formData.location && <span style={{ marginRight: '1rem' }}>{formData.location}</span>}
                         {formData.email && <span style={{ marginRight: '1rem' }}>{formData.email}</span>}
                         {formData.phone && <span>{formData.phone}</span>}
                       </div>
-                      
+
                       {formData.links.length > 0 && (
                         <div style={{ fontSize: '10pt', marginTop: '0.5rem' }}>
                           {formData.links.map((link, index) => (
@@ -1603,7 +1872,7 @@ export default function CVGenerator() {
                     {formData.experience.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>DENEYİM</h2>
-                        
+
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '1.5rem' }}>
                             <div style={{ marginBottom: '0.5rem' }}>
@@ -1623,7 +1892,7 @@ export default function CVGenerator() {
                     {formData.education.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
-                        
+
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1641,12 +1910,12 @@ export default function CVGenerator() {
                     {formData.projects.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>PROJELER</h2>
-                        
+
                         {formData.projects.map((project, index) => (
                           <div key={index} style={{ marginBottom: '1.5rem' }}>
                             <div style={{ fontWeight: 'bold', fontSize: '11pt', marginBottom: '0.25rem' }}>{project.name || 'Proje Adı'}</div>
                             <p style={{ fontSize: '10pt', marginBottom: '0.5rem', lineHeight: 1.5 }}>{project.description || 'Proje açıklaması'}</p>
-                            
+
                             {project.tags && (
                               <div style={{ fontSize: '9pt' }}>
                                 <span style={{ fontWeight: 'bold' }}>Teknolojiler: </span>
@@ -1665,7 +1934,7 @@ export default function CVGenerator() {
                         {formData.skills.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>BECERİLER</h2>
-                            
+
                             {formData.skills.map((skill, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span>{skill.category || 'Beceri'}</span>
@@ -1678,7 +1947,7 @@ export default function CVGenerator() {
                         {formData.languages.length > 0 && (
                           <div>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>DİLLER</h2>
-                            
+
                             {formData.languages.map((language, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span>{language.name || 'Dil'}</span>
@@ -1692,7 +1961,7 @@ export default function CVGenerator() {
                       {/* İletişim */}
                       <div style={{ flex: 1 }}>
                         <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>İLETİŞİM</h2>
-                        
+
                         <div style={{ fontSize: '10pt', lineHeight: 1.8 }}>
                           {formData.location && (
                             <div style={{ marginBottom: '0.5rem' }}>
@@ -1700,14 +1969,14 @@ export default function CVGenerator() {
                               <span>{formData.location}</span>
                             </div>
                           )}
-                          
+
                           {formData.email && (
                             <div style={{ marginBottom: '0.5rem' }}>
                               <span style={{ fontWeight: 'bold' }}>E-posta: </span>
                               <span>{formData.email}</span>
                             </div>
                           )}
-                          
+
                           {formData.phone && (
                             <div style={{ marginBottom: '0.5rem' }}>
                               <span style={{ fontWeight: 'bold' }}>Telefon: </span>
@@ -1720,120 +1989,260 @@ export default function CVGenerator() {
                   </div>
                 )}
 
-                {selectedTemplate === 'minimal-noexp' && (
-                  <div className="p-8 font-serif">
-                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                      <h1 style={{ fontSize: '20pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || 'Pozisyon/Unvan'}</p>
-                      
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem', fontSize: '10pt' }}>
-                        {formData.location && <span>{formData.location}</span>}
-                        {formData.email && <span>• {formData.email}</span>}
-                        {formData.phone && <span>• {formData.phone}</span>}
+                {selectedTemplate === 'professional' && (
+                  <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff', display: 'flex', width: '100%' }}>
+                    {/* Left Sidebar */}
+                    <div style={{ width: '35%', backgroundColor: '#1e3a5f', color: '#ffffff', padding: '24px', boxSizing: 'border-box' }}>
+                      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#ffffff', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e3a5f', fontSize: '32px', fontWeight: 'bold' }}>
+                          {formData.fullName?.charAt(0) || 'A'}
+                        </div>
+                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 8px 0', wordBreak: 'break-word' }}>
+                          {formData.fullName || 'Ad Soyad'}
+                        </h1>
+                        <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
+                          {formData.title || 'Pozisyon'}
+                        </p>
                       </div>
-                      
+
+                      {/* Contact */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          İletişim
+                        </h2>
+                        {formData.email && <div style={{ fontSize: '12px', marginBottom: '8px', wordBreak: 'break-all' }}>✉️ {formData.email}</div>}
+                        {formData.phone && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📞 {formData.phone}</div>}
+                        {formData.location && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📍 {formData.location}</div>}
+                      </div>
+
+                      {/* Skills */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          Beceriler
+                        </h2>
+                        {formData.skills.map((skill, index) => (
+                          <div key={index} style={{ marginBottom: '10px' }}>
+                            <div style={{ fontSize: '12px', marginBottom: '4px' }}>{skill.category}</div>
+                            <div style={{ height: '4px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}>
+                              <div style={{
+                                height: '100%',
+                                backgroundColor: '#ffffff',
+                                borderRadius: '2px',
+                                width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : '40%'
+                              }}></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Languages */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                          Diller
+                        </h2>
+                        {formData.languages.map((language, index) => (
+                          <div key={index} style={{ fontSize: '12px', marginBottom: '6px' }}>
+                            <span style={{ fontWeight: '500' }}>{language.name}</span>
+                            <span style={{ opacity: 0.8 }}> - {language.level}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Links */}
                       {formData.links.length > 0 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.5rem', fontSize: '10pt' }}>
+                        <div>
+                          <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
+                            Bağlantılar
+                          </h2>
                           {formData.links.map((link, index) => (
-                            <span key={index}>{link.name}: {link.url}</span>
+                            <div key={index} style={{ fontSize: '11px', marginBottom: '6px', wordBreak: 'break-all' }}>
+                              {link.name}: {link.url}
+                            </div>
                           ))}
                         </div>
                       )}
                     </div>
 
-                    <hr style={{ margin: '1rem 0', borderTop: '1px solid #ddd' }} />
-
-                    {/* Eğitim Bölümü */}
-                    {formData.education.length > 0 && (
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem' }}>EĞİTİM</h2>
-                        
-                        {formData.education.map((edu, index) => (
-                          <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</div>
-                              <div style={{ fontSize: '10pt' }}>{edu.period || 'Dönem'}</div>
-                            </div>
-                            <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{edu.school || 'Okul'}</div>
-                            {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Projeler Bölümü */}
-                    {formData.projects.length > 0 && (
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem' }}>PROJELER</h2>
-                        
-                        {formData.projects.map((project, index) => (
-                          <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{project.name || 'Proje Adı'}</div>
-                            <p style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{project.description || 'Proje açıklaması'}</p>
-                            
-                            {project.tags && (
-                              <div style={{ fontSize: '9pt', marginBottom: '0.5rem' }}>
-                                <span style={{ fontWeight: 'bold' }}>Teknolojiler: </span>
-                                {project.tags}
+                    {/* Right Content */}
+                    <div style={{ width: '65%', padding: '24px', boxSizing: 'border-box' }}>
+                      {/* Experience - Using Table layout for reliability */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
+                          İŞ DENEYİMİ
+                        </h2>
+                        {formData.experience.map((exp, index) => (
+                          <div key={index} style={{ marginBottom: '16px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
+                            <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position}</h3>
                               </div>
-                            )}
+                            </div>
+                            <div style={{ display: 'table', width: '100%', marginBottom: '8px' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left', fontSize: '14px', color: '#1e3a5f', fontWeight: '500' }}>
+                                {exp.company}
+                              </div>
+                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', width: '1%' }}>
+                                {exp.period}
+                              </div>
+                            </div>
+                            <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
                           </div>
                         ))}
                       </div>
-                    )}
 
-                    {/* Beceriler ve Diller Bölümü */}
-                    <div style={{ display: 'flex', gap: '2rem' }}>
-                      {/* Beceriler */}
-                      <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem' }}>BECERİLER</h2>
-                        
-                        <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', fontSize: '10pt' }}>
-                          {formData.skills.map((skill, index) => (
-                            <li key={index}>
-                              <strong>{skill.category || 'Beceri'}</strong> - {skill.level || 'Seviye'}
-                            </li>
-                          ))}
-                        </ul>
+                      {/* Education - Using Table layout */}
+                      <div>
+                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
+                          EĞİTİM
+                        </h2>
+                        {formData.education.map((edu, index) => (
+                          <div key={index} style={{ marginBottom: '12px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
+                            <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left' }}>
+                                <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree}</h3>
+                              </div>
+                            </div>
+                            <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
+                              <div style={{ display: 'table-cell', textAlign: 'left', fontSize: '14px', color: '#1e3a5f' }}>
+                                {edu.school}
+                              </div>
+                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', width: '1%' }}>
+                                {edu.period}
+                              </div>
+                            </div>
+                            {edu.gpa && <div style={{ fontSize: '12px', color: '#6b7280' }}>Not: {edu.gpa}</div>}
+                          </div>
+                        ))}
                       </div>
-                      
-                      {/* Diller */}
-                      <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem' }}>DİLLER</h2>
-                        
-                        <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', fontSize: '10pt' }}>
-                          {formData.languages.map((language, index) => (
-                            <li key={index}>
-                              <strong>{language.name || 'Dil'}</strong> - {language.level || 'Seviye'}
-                            </li>
-                          ))}
-                        </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Executive Template */}
+                {selectedTemplate === 'executive' && (
+                  <div style={{ fontFamily: "'Georgia', serif", backgroundColor: '#ffffff', padding: '40px', color: '#333333' }}>
+                    <div style={{ borderBottom: '2px solid #000000', paddingBottom: '20px', marginBottom: '30px', display: 'table', width: '100%' }}>
+                      <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+                        <h1 style={{ fontSize: '32px', fontWeight: 'bold', margin: '0 0 5px 0', textTransform: 'uppercase', letterSpacing: '2px' }}>{formData.fullName || 'Ad Soyad'}</h1>
+                        <p style={{ fontSize: '18px', margin: 0, fontStyle: 'italic', color: '#555555' }}>{formData.title || 'Yönetici Pozisyonu'}</p>
+                      </div>
+                      <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'right', fontSize: '12px', lineHeight: '1.6' }}>
+                        <div>{formData.email}</div>
+                        <div>{formData.phone}</div>
+                        <div>{formData.location}</div>
+                        {formData.links.map((link, i) => <div key={i}>{link.url}</div>)}
                       </div>
                     </div>
 
-                    {/* Kişisel Bilgiler Bölümü */}
-                    <div style={{ marginTop: '1.5rem' }}>
-                      <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem' }}>KİŞİSEL BİLGİLER</h2>
-                      
-                      <ul style={{ listStyleType: 'none', paddingLeft: '0', fontSize: '10pt' }}>
-                        {formData.location && (
-                          <li style={{ marginBottom: '0.25rem' }}>
-                            <strong>Adres:</strong> {formData.location}
-                          </li>
-                        )}
-                        
-                        {formData.email && (
-                          <li style={{ marginBottom: '0.25rem' }}>
-                            <strong>E-posta:</strong> {formData.email}
-                          </li>
-                        )}
-                        
-                        {formData.phone && (
-                          <li style={{ marginBottom: '0.25rem' }}>
-                            <strong>Telefon:</strong> {formData.phone}
-                          </li>
-                        )}
-                      </ul>
+                    <div style={{ marginBottom: '30px' }}>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Profesyonel Deneyim</h2>
+                      {formData.experience.map((exp, index) => (
+                        <div key={index} style={{ marginBottom: '20px' }}>
+                          <div style={{ display: 'table', width: '100%', marginBottom: '5px' }}>
+                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '16px' }}>{exp.position}</div>
+                            <div style={{ display: 'table-cell', textAlign: 'right', fontWeight: 'bold' }}>{exp.company}</div>
+                          </div>
+                          <div style={{ display: 'table', width: '100%', marginBottom: '10px' }}>
+                            <div style={{ display: 'table-cell', fontStyle: 'italic', fontSize: '14px', color: '#666' }}>{exp.period}</div>
+                          </div>
+                          <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0 }}>{exp.details}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ marginBottom: '30px' }}>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Eğitim</h2>
+                      {formData.education.map((edu, index) => (
+                        <div key={index} style={{ marginBottom: '15px' }}>
+                          <div style={{ display: 'table', width: '100%' }}>
+                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '15px' }}>{edu.degree}</div>
+                            <div style={{ display: 'table-cell', textAlign: 'right' }}>{edu.school}</div>
+                          </div>
+                          <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#666', marginTop: '2px' }}>{edu.period}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ display: 'table', width: '100%' }}>
+                      <div style={{ display: 'table-cell', width: '50%', paddingRight: '20px', verticalAlign: 'top' }}>
+                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Yetkinlikler</h2>
+                        <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                          {formData.skills.map((s, i) => <span key={i} style={{ display: 'inline-block', backgroundColor: '#f0f0f0', padding: '2px 8px', borderRadius: '4px', marginRight: '5px', marginBottom: '5px' }}>{s.category}</span>)}
+                        </div>
+                      </div>
+                      <div style={{ display: 'table-cell', width: '50%', paddingLeft: '20px', verticalAlign: 'top' }}>
+                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Diller</h2>
+                        <div style={{ fontSize: '14px' }}>
+                          {formData.languages.map((l, i) => <div key={i} style={{ marginBottom: '5px' }}><strong>{l.name}</strong>: {l.level}</div>)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Simple Text Template - Requested by User */}
+                {selectedTemplate === 'simple-text' && (
+                  <div style={{ fontFamily: "'Times New Roman', serif", backgroundColor: '#ffffff', padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#000000' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{formData.fullName || 'AD SOYAD'}</h1>
+                      <p style={{ fontSize: '16px', fontStyle: 'italic', marginBottom: '12px' }}>{formData.title || 'Pozisyon'}</p>
+                      <div style={{ fontSize: '13px', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                        {formData.email && <span>{formData.email}</span>}
+                        {formData.phone && <span>{formData.phone}</span>}
+                        {formData.location && <span>{formData.location}</span>}
+                      </div>
+                      <div style={{ fontSize: '13px', display: 'flex', justifyContent: 'center', gap: '16px', marginTop: '8px' }}>
+                        {formData.links.map((link, index) => (
+                          <span key={index}>{link.name}: {link.url}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #000', margin: '20px 0' }}></div>
+
+                    {/* Experience */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>İş Deneyimi</h2>
+                      {formData.experience.map((exp, index) => (
+                        <div key={index} style={{ marginBottom: '20px' }}>
+                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{exp.position}</h3>
+                          <div style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '4px' }}>
+                            {exp.company} | {exp.period}
+                          </div>
+                          <p style={{ fontSize: '14px', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #eee', margin: '20px 0' }}></div>
+
+                    {/* Education */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>Eğitim</h2>
+                      {formData.education.map((edu, index) => (
+                        <div key={index} style={{ marginBottom: '12px' }}>
+                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{edu.degree}</h3>
+                          <div style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '4px' }}>
+                            {edu.school} | {edu.period}
+                          </div>
+                          {edu.gpa && <div style={{ fontSize: '14px' }}>Not: {edu.gpa}</div>}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #eee', margin: '20px 0' }}></div>
+
+                    {/* Skills & Languages */}
+                    <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>Yetenekler & Diller</h2>
+                      <div style={{ fontSize: '14px', marginBottom: '12px' }}>
+                        <strong>Yetenekler: </strong>
+                        {formData.skills.map((s, i) => s.category).join(', ')}
+                      </div>
+                      <div style={{ fontSize: '14px' }}>
+                        <strong>Diller: </strong>
+                        {formData.languages.map((l, i) => `${l.name} (${l.level})`).join(', ')}
+                      </div>
                     </div>
                   </div>
                 )}

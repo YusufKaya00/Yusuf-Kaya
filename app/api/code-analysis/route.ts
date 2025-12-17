@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 
-// OpenRouter API anahtarı (Qwen model için)
-const QWEN_API_KEY = process.env.QWEN_API_KEY || '';
+// OpenRouter API anahtarı (Mistral Devstral için)
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const TIMEOUT_DURATION = 30000; // 30 saniye
 
 // API anahtarlarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
   // OpenRouter API anahtarı kontrolü
-  return key && key.length >= 30 && key.startsWith('sk-or-v1');
+  return key && key.length >= 30 && key.startsWith('sk-or-');
 }
 
 // Timeout promise oluştur
@@ -19,21 +19,21 @@ function timeoutPromise(ms: number) {
   });
 }
 
-// Kod analizi için OpenRouter API çağrısı (Qwen model)
-async function analyzeCodeWithQwen(
+// Kod analizi için OpenRouter API çağrısı (Mistral Devstral)
+async function analyzeCodeWithOpenRouter(
   code: string,
   language: string,
   analysisTypes: string[]
 ) {
   // API anahtarı kontrolü
-  if (!isValidAPIKey(QWEN_API_KEY)) {
+  if (!isValidAPIKey(OPENROUTER_API_KEY)) {
     console.log('Geçerli API anahtarı bulunamadı, simüle edilmiş analiz kullanılıyor');
     return simulateCodeAnalysis(code, language, analysisTypes);
   }
 
   try {
     console.log('OpenRouter API ile kod analizi yapılıyor...');
-    
+
     // AI istek metni oluşturma
     const typeDescriptions = analysisTypes.map(type => {
       switch (type) {
@@ -45,7 +45,7 @@ async function analyzeCodeWithQwen(
         default: return type;
       }
     }).join(', ');
-    
+
     const promptText = `Aşağıdaki ${language} kodunu analiz et ve şu alanlarda değerlendirme yap: ${typeDescriptions}.
     
     Kod:
@@ -69,21 +69,21 @@ async function analyzeCodeWithQwen(
     - [Öneri 2]
     
     JSON çıktısı istemiyorum, markdown formatında yanıt ver.`;
-    
+
     console.log('API isteği gönderiliyor...');
-    
+
     // OpenRouter API'ye istek gönder
     const response = await Promise.race([
       fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${QWEN_API_KEY}`,
-          'HTTP-Referer': 'https://portfolio-ysfproject.vercel.app',
-          'X-Title': 'Portfolio Project'
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
+          'X-Title': 'Yusuf Kaya Portfolio'
         },
         body: JSON.stringify({
-          model: 'qwen/qwen3-30b-a3b:free',
+          model: 'mistralai/devstral-2512:free',
           messages: [
             { role: 'system', content: 'Sen profesyonel bir kod analisti ve yazılım geliştirme uzmanısın. Kod kalitesi, güvenlik, performans ve temiz kod prensipleri konusunda uzmanlaştın.' },
             { role: 'user', content: promptText }
@@ -101,17 +101,17 @@ async function analyzeCodeWithQwen(
       }).then(data => data.choices[0].message.content),
       timeoutPromise(TIMEOUT_DURATION)
     ]);
-    
+
     // Yanıtı kontrol et
     if (response) {
       const text = response as string;
       console.log('API yanıtı alındı');
-      
+
       // Markdown yanıtı HTML'e çevir ve kategorilere ayır
       const results = parseAndFormatAnalysisResults(text, analysisTypes);
       return results;
     }
-    
+
     throw new Error('API yanıtı boş geldi');
   } catch (error) {
     console.error('OpenRouter API hatası:', error);
@@ -130,10 +130,10 @@ function parseAndFormatAnalysisResults(markdownText: string, analysisTypes: stri
     clean_code: '✨',
     readability: '👁️',
   };
-  
+
   // Markdown'ı bölümlere ayır, # ile başlayan her bir başlık bir kategoridir
   const sections = markdownText.split(/(?=# )/g);
-  
+
   // Her bir analiz türü için karşılık gelen bölümü bul
   return analysisTypes.map(type => {
     const typeTitle = {
@@ -143,13 +143,13 @@ function parseAndFormatAnalysisResults(markdownText: string, analysisTypes: stri
       clean_code: 'Temiz Kod Prensipleri',
       readability: 'Okunabilirlik ve Sürdürülebilirlik',
     }[type] || type;
-    
+
     // Bu analiz türüne karşılık gelen bölümü bul
-    const section = sections.find(s => 
-      s.toLowerCase().includes(type.toLowerCase()) || 
+    const section = sections.find(s =>
+      s.toLowerCase().includes(type.toLowerCase()) ||
       s.toLowerCase().includes(typeTitle.toLowerCase())
     ) || `# ${typeTitle}\n\n## Bulgular\n- Analiz yapılamadı`;
-    
+
     return {
       type,
       title: typeTitle,
@@ -165,7 +165,7 @@ function simulateCodeAnalysis(code: string, language: string, analysisTypes: str
   const lines = code.split('\n').length;
   const complexity = Math.min(10, Math.max(1, Math.floor(lines / 10)));
   const readability = Math.max(1, 10 - complexity + Math.floor(Math.random() * 3));
-  
+
   // Her analiz türü için simüle edilmiş sonuçlar
   return analysisTypes.map(type => {
     const results = {
@@ -254,7 +254,7 @@ ${code.includes('  ') && code.includes('    ') ? '- Tutarsız girinti kullanım�
 - İsimlendirmeleri anlamlı yapın`
       },
     };
-    
+
     return results[type as keyof typeof results] || {
       type,
       title: `${type.charAt(0).toUpperCase() + type.slice(1)} Analizi`,
@@ -296,29 +296,29 @@ export async function POST(request: Request) {
 
     // Kod analizi
     try {
-      const results = await analyzeCodeWithQwen(code, language, analysisTypes);
-      
-      return NextResponse.json({ 
+      const results = await analyzeCodeWithOpenRouter(code, language, analysisTypes);
+
+      return NextResponse.json({
         results,
-        source: isValidAPIKey(QWEN_API_KEY) ? 'qwen' : 'simulation'
+        source: isValidAPIKey(OPENROUTER_API_KEY) ? 'openrouter' : 'simulation'
       });
     } catch (error: any) {
       console.error('Analiz hatası:', error.message || error);
-      
+
       // Hata durumunda simulasyon sonuçlarını döndür
       const simulatedResults = simulateCodeAnalysis(code, language, analysisTypes);
-      
-      return NextResponse.json({ 
+
+      return NextResponse.json({
         results: simulatedResults,
         source: 'simulation_fallback',
         error: error.message
       });
     }
-    
+
   } catch (error: any) {
     console.error('Genel hata:', error.message || error);
     return NextResponse.json(
-      { 
+      {
         error: `Bir hata oluştu: ${error.message || 'Bilinmeyen hata'}`,
         source: 'error_fallback'
       },

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// OpenRouter API anahtarı (Qwen model için)
-const QWEN_API_KEY = process.env.QWEN_API_KEY || '';
+// OpenRouter API anahtarı (Mistral Devstral için)
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 const TIMEOUT_DURATION = 30000; // 30 saniye
 
 // Zaman aşımı kontrolü için Promise
@@ -16,21 +16,21 @@ const timeoutPromise = (ms: number) => {
 
 // API anahtarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
-  return key && key.length >= 30 && key.startsWith('sk-or-v1');
+  return key && key.length >= 30 && key.startsWith('sk-or-');
 }
 
-// OpenRouter API ile içerik oluşturma (Qwen model)
-async function generateWithQwen(prompt: string) {
+// OpenRouter API ile içerik oluşturma (Mistral Devstral)
+async function generateWithOpenRouter(prompt: string) {
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${QWEN_API_KEY}`,
-      'HTTP-Referer': 'https://portfolio-ysfproject.vercel.app',
-      'X-Title': 'Portfolio Project'
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
+      'X-Title': 'Yusuf Kaya Portfolio'
     },
     body: JSON.stringify({
-      model: 'qwen/qwen3-30b-a3b:free',
+      model: 'mistralai/devstral-2512:free',
       messages: [
         { role: 'system', content: 'Sen profesyonel bir özgeçmiş oluşturucusun. Kullanıcının verdiği bilgilere göre JSON formatında CV hazırlayacaksın.' },
         { role: 'user', content: prompt }
@@ -55,14 +55,14 @@ export async function POST(request: Request) {
 
     // Debug environment variables
     console.log('Environment variables:');
-    console.log('QWEN_API_KEY length:', process.env.QWEN_API_KEY?.length || 0);
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('QWEN') || key.includes('API')));
+    console.log('OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length || 0);
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('OPENROUTER') || key.includes('API')));
 
     // API anahtarını kontrol et
     // NOT: Bu sadece bir test içindir - gerçek uygulamalarda API anahtarlarını kodda saklamayın!
     // Test ettikten sonra kaldırın ve sadece çevre değişkeniyle çalışın
-    const apiKey = process.env.QWEN_API_KEY || 'YOUR_TEST_API_KEY_HERE';
-    
+    const apiKey = process.env.OPENROUTER_API_KEY || '';
+
     // Gerçek API anahtarı kontrolü
     if (apiKey === 'YOUR_TEST_API_KEY_HERE') {
       console.log('⚠️ Using test API key - replace with your actual key');
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     });
 
     const completion = await openai.chat.completions.create({
-      model: "qwen/qwen3-8b:free",
+      model: "mistralai/devstral-2512:free",
       messages: [
         {
           role: "system",
@@ -106,13 +106,40 @@ export async function POST(request: Request) {
     });
 
     const aiResponse = completion.choices[0].message.content;
-    
+
     if (!aiResponse) {
       throw new Error('AI yanıtı boş geldi');
     }
 
-    const cvData = JSON.parse(aiResponse);
-    
+    // AI bazen markdown code block içinde JSON döndürüyor, bunu temizle
+    let cleanedResponse = aiResponse.trim();
+    if (cleanedResponse.startsWith('```json')) {
+      cleanedResponse = cleanedResponse.slice(7);
+    } else if (cleanedResponse.startsWith('```')) {
+      cleanedResponse = cleanedResponse.slice(3);
+    }
+    if (cleanedResponse.endsWith('```')) {
+      cleanedResponse = cleanedResponse.slice(0, -3);
+    }
+    cleanedResponse = cleanedResponse.trim();
+
+    // Regex ile ilk geçerli JSON objesini bulmaya çalış
+    const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+
+    let cvData;
+    if (jsonMatch) {
+      try {
+        cvData = JSON.parse(jsonMatch[0]);
+      } catch (e) {
+        console.error('JSON parse error from regex match:', e);
+        // Regex başarısız olursa, temizlenmiş yanıtı doğrudan parse etmeyi dene
+        cvData = JSON.parse(cleanedResponse);
+      }
+    } else {
+      // Regex eşleşmezse, temizlenmiş yanıtı doğrudan parse etmeyi dene
+      cvData = JSON.parse(cleanedResponse);
+    }
+
     return NextResponse.json({ cv: cvData });
   } catch (error) {
     console.error('AI CV generation failed:', error);
