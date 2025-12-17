@@ -5,7 +5,6 @@ const nextConfig = {
   experimental: {
     // Bellek kullanımını optimize etmek için
     memoryBasedWorkersCount: true,
-    optimizeCss: true,
     optimizePackageImports: ['framer-motion'],
   },
   // Resim optimizasyonu
@@ -14,10 +13,6 @@ const nextConfig = {
     imageSizes: [16, 32, 64, 96],
     formats: ['image/webp'],
     minimumCacheTTL: 60,
-  },
-  // API call'ları için rate limiting
-  api: {
-    responseLimit: false,
   },
   // Sunucu yükünü azaltmak için
   compress: true,
