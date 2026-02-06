@@ -12,20 +12,20 @@ interface ClientLayoutProps {
 function SearchParamsHandler({ setLayoutKeyCallback }: { setLayoutKeyCallback: (key: string) => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  
+
   useEffect(() => {
     const handleHashChange = () => {
       setLayoutKeyCallback(`${pathname}${window.location.hash}`);
     };
-    
+
     setLayoutKeyCallback(`${pathname}${window.location.hash}`);
     window.addEventListener('hashchange', handleHashChange);
-    
+
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [pathname, searchParams, setLayoutKeyCallback]);
-  
+
   return null;
 }
 
@@ -35,7 +35,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  
+
   // Scroll progress bar - daha smooth ayarlar
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
@@ -47,7 +47,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   // Performance: Throttle scroll handler with requestAnimationFrame
   useEffect(() => {
     let ticking = false;
-    
+
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
@@ -61,7 +61,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
     // İlk durumu ayarla
     handleScroll();
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -71,10 +71,11 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   };
 
   const navLinks = [
-    { href: '/portfolio', label: 'PORTFOLYO' },
+    { href: '/portfolio', label: 'PORTFOLIO' },
     { href: '/blog', label: 'BLOG' },
-    { href: '/#about', label: 'HAKKIMDA', scrollTo: 'about' },
-    { href: '/#contact', label: 'İLETİŞİM', scrollTo: 'contact' },
+    { href: '/cv', label: 'MY CV' },
+    { href: '/#about', label: 'ABOUT', scrollTo: 'about' },
+    { href: '/#contact', label: 'CONTACT', scrollTo: 'contact' },
   ];
 
   const handleNavClick = (link: typeof navLinks[0]) => {
@@ -86,7 +87,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         const offset = 80; // navbar height
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
         const offsetPosition = elementPosition - offset;
-        
+
         window.scrollTo({
           top: offsetPosition,
           behavior: 'smooth'
@@ -103,28 +104,27 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <Suspense fallback={null}>
         <SearchParamsHandler setLayoutKeyCallback={setLayoutKey} />
       </Suspense>
-      
+
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-600 origin-left z-[60]"
         style={{ scaleX }}
       />
-      
+
       {/* Navigation */}
-      <motion.nav 
+      <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrolled 
-            ? 'glass-strong shadow-2xl border-b border-white/10' 
-            : 'bg-gradient-to-r from-gray-900/30 to-gray-800/30 backdrop-blur-md border-b border-gray-700/20'
-        }`}
+        className={`fixed w-full z-50 transition-all duration-300 ${scrolled
+          ? 'glass-strong shadow-2xl border-b border-white/10'
+          : 'bg-gradient-to-r from-gray-900/30 to-gray-800/30 backdrop-blur-md border-b border-gray-700/20'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center group">
-              <motion.div 
+              <motion.div
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.6 }}
                 className="relative"
@@ -156,11 +156,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                         handleNavClick(link);
                       }
                     }}
-                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${
-                      pathname === link.href || (link.scrollTo && pathname === '/') 
-                        ? 'text-white' 
-                        : 'text-gray-300 hover:text-white'
-                    }`}
+                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${pathname === link.href || (link.scrollTo && pathname === '/')
+                      ? 'text-white'
+                      : 'text-gray-300 hover:text-white'
+                      }`}
                   >
                     <span className="relative z-10">{link.label}</span>
                     {pathname === link.href && (
@@ -229,11 +228,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
                           setMobileMenuOpen(false);
                         }
                       }}
-                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                        pathname === link.href
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                          : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                      }`}
+                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${pathname === link.href
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                        : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                        }`}
                     >
                       {link.label}
                     </Link>

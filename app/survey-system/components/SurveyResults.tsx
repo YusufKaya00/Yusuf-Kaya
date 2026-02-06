@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Survey, Submission, Question, QuestionType, AnalysisResult } from '../types';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 
 interface SurveyResultsProps {
   survey: Survey;
@@ -117,7 +117,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
   const getLegendColor = (value: number, max: number) => {
     if (max === 0) return 'rgba(209, 213, 219, 0.8)';
     const percentage = value / max;
-    
+
     if (percentage > 0.7) return 'rgba(79, 70, 229, 0.8)';
     if (percentage > 0.4) return 'rgba(139, 92, 246, 0.8)';
     if (percentage > 0.1) return 'rgba(244, 114, 182, 0.8)';
@@ -130,9 +130,9 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold mb-1">{survey.title} - Sonuçlar</h1>
+            <h1 className="text-2xl font-semibold mb-1">{survey.title} - Results</h1>
             <p className="text-purple-100 text-sm md:text-base">
-              Toplam {submissions.length} kişi ankete katıldı
+              Total {submissions.length} people participated in the survey
             </p>
           </div>
           <button
@@ -142,7 +142,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
             </svg>
-            Geri Dön
+            Go Back
           </button>
         </div>
       </div>
@@ -152,23 +152,21 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
         <nav className="flex">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-3 text-sm font-medium ${
-              activeTab === 'overview'
+            className={`px-4 py-3 text-sm font-medium ${activeTab === 'overview'
                 ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
+              }`}
           >
-            Genel Bakış
+            Overview
           </button>
           <button
             onClick={() => setActiveTab('individual')}
-            className={`px-4 py-3 text-sm font-medium ${
-              activeTab === 'individual'
+            className={`px-4 py-3 text-sm font-medium ${activeTab === 'individual'
                 ? 'border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400'
                 : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-            }`}
+              }`}
           >
-            Bireysel Yanıtlar ({submissions.length})
+            Individual Responses ({submissions.length})
           </button>
         </nav>
       </div>
@@ -182,9 +180,9 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Veri yok</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No data</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Henüz bu ankete katılım olmamış
+                  No one has participated in this survey yet
                 </p>
               </div>
             ) : (
@@ -204,7 +202,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                           </div>
                         ))
                       ) : (
-                        <p className="text-gray-500 dark:text-gray-400 italic">Bu soruya yanıt verilmemiş</p>
+                        <p className="text-gray-500 dark:text-gray-400 italic">No responses for this question</p>
                       )}
                     </div>
                   ) : (
@@ -215,13 +213,13 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                           const max = Math.max(...result.data.values);
                           const value = result.data.values[i];
                           const percentage = max === 0 ? 0 : Math.round((value / submissions.length) * 100);
-                          
+
                           return (
                             <div key={i} className="relative">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                                  {value} yanıt ({percentage}%)
+                                  {value} responses ({percentage}%)
                                 </span>
                               </div>
                               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-1">
@@ -246,10 +244,10 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                               const max = Math.max(...result.data.values);
                               const value = result.data.values[i];
                               const height = max === 0 ? 0 : Math.max(10, (value / max) * 100);
-                              
+
                               return (
                                 <div key={i} className="flex flex-col items-center flex-1">
-                                  <div 
+                                  <div
                                     className="w-full rounded-t transition-all duration-500"
                                     style={{
                                       height: `${height}%`,
@@ -279,9 +277,9 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                 <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Katılım yok</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No participation</h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Henüz bu ankete katılım olmamış
+                  No one has participated in this survey yet
                 </p>
               </div>
             ) : (
@@ -294,10 +292,9 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                       onClick={() => setSelectedSubmission(submission)}
                       className={`
                         p-4 rounded-lg cursor-pointer transition-all
-                        ${
-                          selectedSubmission?.id === submission.id
-                            ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700'
-                            : 'bg-white dark:bg-gray-750 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        ${selectedSubmission?.id === submission.id
+                          ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700'
+                          : 'bg-white dark:bg-gray-750 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                         }
                         border shadow-sm
                       `}
@@ -307,13 +304,13 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                           #{index + 1}
                         </span>
                         <span className="text-gray-500 dark:text-gray-400 text-xs">
-                          {format(new Date(submission.submittedAt), 'PPp', { locale: tr })}
+                          {format(new Date(submission.submittedAt), 'PPp', { locale: enUS })}
                         </span>
                       </div>
                       <div className="mt-2">
-                        <h4 className="font-medium text-gray-900 dark:text-gray-100">Yanıt Detayları</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100">Response Details</h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          {submission.answers.length} soru yanıtlanmış
+                          {submission.answers.length} questions answered
                         </p>
                       </div>
                     </div>
@@ -325,17 +322,17 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                   <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                     <div className="border-b border-gray-200 dark:border-gray-700 pb-3 mb-4 flex justify-between items-center">
                       <h4 className="font-medium text-lg text-gray-900 dark:text-gray-100">
-                        Yanıt Detayı
+                        Response Detail
                       </h4>
                       <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        {format(new Date(selectedSubmission.submittedAt), 'PPp', { locale: tr })}
+                        {format(new Date(selectedSubmission.submittedAt), 'PPp', { locale: enUS })}
                       </span>
                     </div>
 
                     <div className="space-y-6">
                       {survey.questions.map((question, qIndex) => {
                         const answer = selectedSubmission.answers.find(a => a.questionId === question.id);
-                        
+
                         return (
                           <div key={question.id} className="border-b border-gray-200 dark:border-gray-700 last:border-0 pb-4 last:pb-0">
                             <div className="flex items-start">
@@ -346,7 +343,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                                 <p className="font-medium text-gray-700 dark:text-gray-300 mb-2">
                                   {question.text}
                                 </p>
-                                
+
                                 {answer ? (
                                   <div className="mt-1">
                                     {question.type === QuestionType.ShortAnswer ? (
@@ -356,7 +353,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                                     ) : question.type === QuestionType.Rating ? (
                                       <div className="flex items-center">
                                         <span className="inline-flex items-center justify-center w-10 h-10 rounded-md text-white font-medium"
-                                              style={{ backgroundColor: getColorForIndex(parseInt(answer.value as string) - 1 || 0) }}>
+                                          style={{ backgroundColor: getColorForIndex(parseInt(answer.value as string) - 1 || 0) }}>
                                           {answer.value}
                                         </span>
                                         <span className="ml-2 text-gray-600 dark:text-gray-400">
@@ -371,7 +368,7 @@ export default function SurveyResults({ survey, submissions, onBack }: SurveyRes
                                   </div>
                                 ) : (
                                   <p className="text-gray-400 dark:text-gray-500 italic text-sm">
-                                    Yanıtlanmamış
+                                    Not answered
                                   </p>
                                 )}
                               </div>

@@ -48,7 +48,7 @@ export default function FiratConvert() {
   const processFile = (file: File) => {
     setIsAnalyzing(true);
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
@@ -56,56 +56,56 @@ export default function FiratConvert() {
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(sheet) as SheetDataItem[];
-        
+
         if (jsonData.length > 0) {
           setSheetData(jsonData);
-          
+
           // Sütunları ve sayısal sütunları belirle
           const cols = Object.keys(jsonData[0] as Record<string, any>);
           setColumns(cols);
-          
+
           const numCols = cols.filter(col => {
             const value = jsonData[0][col];
             return typeof value === 'number' || (typeof value === 'string' && !isNaN(Number(value)));
           });
           setNumericalColumns(numCols);
-          
+
           if (numCols.length > 0) {
             setSelectedColumn(numCols[0]);
             calculateStats(jsonData, numCols[0]);
           }
-          
+
           setStep('analyze');
         }
       } catch (error) {
-        console.error('Dosya işlenirken hata:', error);
-        alert('Dosya işlenirken bir hata oluştu. Dosya formatını kontrol edin.');
+        console.error('Error processing file:', error);
+        alert('An error occurred while processing the file. Please check the file format.');
       } finally {
         setIsAnalyzing(false);
       }
     };
-    
+
     reader.readAsBinaryString(file);
   };
 
   // İstatistik hesaplama
   const calculateStats = (data: SheetDataItem[], column: string) => {
     const values = data.map(row => Number(row[column])).filter(val => !isNaN(val));
-    
+
     if (values.length === 0) {
       setStats(null);
       return;
     }
-    
+
     const sum = values.reduce((acc, val) => acc + val, 0);
     const avg = sum / values.length;
     const max = Math.max(...values);
     const min = Math.min(...values);
     const sortedValues = [...values].sort((a, b) => a - b);
-    const median = sortedValues.length % 2 === 0 
+    const median = sortedValues.length % 2 === 0
       ? (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2
       : sortedValues[Math.floor(sortedValues.length / 2)];
-    
+
     setStats({
       count: values.length,
       sum,
@@ -114,7 +114,7 @@ export default function FiratConvert() {
       max,
       min
     });
-    
+
     setStep('visualize');
   };
 
@@ -135,29 +135,29 @@ export default function FiratConvert() {
   // Renk fonksiyonu test fonksiyonu - oklab hatalarını yakalamak için
   const testColorFunction = (colorStr: string): string => {
     if (!colorStr) return '#FFFFFF';
-    
+
     // oklab veya lab veya diğer modern renk fonksiyonlarını kontrol et
     if (
-      colorStr.includes('oklab') || 
-      colorStr.includes('lab(') || 
+      colorStr.includes('oklab') ||
+      colorStr.includes('lab(') ||
       colorStr.includes('lch(') ||
       colorStr.includes('color(')
     ) {
       // Güvenli hex renk kodu ile değiştir
       return colorStr.includes('rgba') ? 'rgba(255, 255, 255, 0.8)' : '#FFFFFF';
     }
-    
+
     return colorStr;
   };
 
   // Grafik verilerini hazırla
   const prepareChartData = () => {
     if (!sheetData || !selectedColumn) return null;
-    
+
     // Benzersiz kategorileri bul (en fazla 10 tane)
     let categories: any[] = [];
     let values: number[] = [];
-    
+
     // Eğer sayısal veriyse, aralıklara bölme
     if (numericalColumns.includes(selectedColumn)) {
       const numValues = sheetData.map(row => Number(row[selectedColumn])).filter(val => !isNaN(val));
@@ -166,7 +166,7 @@ export default function FiratConvert() {
       const range = max - min;
       const intervalCount = Math.min(10, Math.ceil(range));
       const intervalSize = range / intervalCount;
-      
+
       // Veri aralıklarını oluştur
       const intervals = Array.from({ length: intervalCount }, (_, i) => {
         const start = min + i * intervalSize;
@@ -177,32 +177,32 @@ export default function FiratConvert() {
           end
         };
       });
-      
+
       // Değerleri aralıklara göre gruplandır
       intervals.forEach(interval => {
         const count = numValues.filter(val => val >= interval.start && val < interval.end).length;
         categories.push(interval.label);
         values.push(count);
       });
-    } 
+    }
     // Metin veya kategorik veriyse, her benzersiz değer için bir grup oluştur
     else {
       const valueCounts: Record<string, number> = {};
-      
+
       sheetData.forEach(row => {
         const value = String(row[selectedColumn]);
         valueCounts[value] = (valueCounts[value] || 0) + 1;
       });
-      
+
       // En fazla 10 kategori göster
       const topCategories = Object.entries(valueCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 10);
-      
+
       categories = topCategories.map(([category]) => category);
       values = topCategories.map(([_, count]) => count);
     }
-    
+
     const colors = [
       'rgba(54, 162, 235, 0.6)',
       'rgba(255, 99, 132, 0.6)',
@@ -215,7 +215,7 @@ export default function FiratConvert() {
       'rgba(40, 159, 64, 0.6)',
       'rgba(210, 199, 199, 0.6)',
     ];
-    
+
     return {
       labels: categories,
       datasets: [
@@ -264,7 +264,7 @@ export default function FiratConvert() {
   // PDF olarak indirme
   const exportToPDF = async () => {
     if (!chartRef.current) return;
-    
+
     try {
       // HTML elementini doğrudan PDF'e çevirmek yerine 
       // önce canvas olarak render edeceğiz
@@ -274,11 +274,11 @@ export default function FiratConvert() {
       tempContainer.style.backgroundColor = '#FFFFFF';
       tempContainer.style.width = '800px'; // Sabit genişlik
       tempContainer.style.height = '600px'; // Sabit yükseklik
-      
+
       // Grafik elementinin bir kopyasını oluştur
       const chartClone = chartRef.current.cloneNode(true) as HTMLElement;
       chartClone.style.backgroundColor = '#FFFFFF';
-      
+
       // Renk sorunlarını önlemek için
       const allElements = chartClone.querySelectorAll('*');
       allElements.forEach(el => {
@@ -290,7 +290,7 @@ export default function FiratConvert() {
           if (el.style.backgroundColor && el.style.backgroundColor.includes('oklab')) {
             el.style.backgroundColor = 'transparent';
           }
-          
+
           // Tüm renkleri standart hex renklerine çevir
           if (el.style.color) {
             try {
@@ -306,10 +306,10 @@ export default function FiratConvert() {
           }
         }
       });
-      
+
       tempContainer.appendChild(chartClone);
       document.body.appendChild(tempContainer);
-      
+
       try {
         // Canvas render ayarları
         const canvas = await html2canvas(chartClone, {
@@ -325,23 +325,23 @@ export default function FiratConvert() {
               try {
                 if (element.style) {
                   // Oklab formatlarıyla ilgili tüm renk atamalarını temizle
-                  if (element.style.color && 
-                     (element.style.color.includes('oklab') || 
-                      element.style.color.includes('lab(') || 
+                  if (element.style.color &&
+                    (element.style.color.includes('oklab') ||
+                      element.style.color.includes('lab(') ||
                       element.style.color.includes('lch('))) {
                     element.style.color = '#333333';
                   }
-                  
-                  if (element.style.backgroundColor && 
-                     (element.style.backgroundColor.includes('oklab') || 
-                      element.style.backgroundColor.includes('lab(') || 
+
+                  if (element.style.backgroundColor &&
+                    (element.style.backgroundColor.includes('oklab') ||
+                      element.style.backgroundColor.includes('lab(') ||
                       element.style.backgroundColor.includes('lch('))) {
                     element.style.backgroundColor = 'transparent';
                   }
-                  
-                  if (element.style.borderColor && 
-                     (element.style.borderColor.includes('oklab') || 
-                      element.style.borderColor.includes('lab(') || 
+
+                  if (element.style.borderColor &&
+                    (element.style.borderColor.includes('oklab') ||
+                      element.style.borderColor.includes('lab(') ||
                       element.style.borderColor.includes('lch('))) {
                     element.style.borderColor = '#CCCCCC';
                   }
@@ -352,9 +352,9 @@ export default function FiratConvert() {
             });
           }
         });
-        
+
         const imageData = canvas.toDataURL('image/png');
-        
+
         // PDF oluştur
         const pdf = new jsPDF({
           orientation: 'landscape',
@@ -362,12 +362,12 @@ export default function FiratConvert() {
           format: 'a4',
           compress: true
         });
-        
+
         // PDF'e resim ekle
         const pdfWidth = 297;  // A4 landscape width in mm
         const pdfHeight = 210; // A4 landscape height in mm
         pdf.addImage(imageData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        
+
         // Türkçe meta bilgi ekle
         pdf.setProperties({
           title: 'Firat Convert - Veri Analiz Raporu',
@@ -376,7 +376,7 @@ export default function FiratConvert() {
           keywords: 'veri, analiz, rapor',
           creator: 'Firat Convert'
         });
-        
+
         // Yazı ekle - ASCII karakter kullanımı
         pdf.setFontSize(14);
         pdf.text('Firat Convert - Veri Analiz Raporu', 10, 10);
@@ -384,7 +384,7 @@ export default function FiratConvert() {
         pdf.text(`Dosya: ${file?.name || 'Bilinmeyen'}`, 10, 20);
         pdf.text(`Tarih: ${new Date().toLocaleDateString('en-US')}`, 10, 25);
         pdf.text(`Analiz Edilen Sutun: ${selectedColumn}`, 10, 35);
-        
+
         // İstatistikleri ekle
         if (stats) {
           pdf.setFontSize(12);
@@ -396,7 +396,7 @@ export default function FiratConvert() {
           pdf.text(`Maksimum: ${stats.max.toFixed(2)}`, 15, 75);
           pdf.text(`Minimum: ${stats.min.toFixed(2)}`, 15, 80);
         }
-        
+
         // PDF dosyasını indir
         pdf.save(`firat-convert-${selectedColumn}-rapor.pdf`);
       } finally {
@@ -406,8 +406,8 @@ export default function FiratConvert() {
         }
       }
     } catch (error) {
-      console.error('PDF oluştururken hata:', error);
-      alert('PDF oluşturulurken bir hata oluştu. Lütfen tarayıcınızı güncelleyin veya farklı bir tarayıcı deneyin.');
+      console.error('Error creating PDF:', error);
+      alert('An error occurred while creating the PDF. Please update your browser or try a different one.');
     }
   };
 
@@ -420,20 +420,20 @@ export default function FiratConvert() {
       <div className="relative z-20 pt-16 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <motion.h1 
+            <motion.h1
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="text-4xl font-bold text-white mb-4"
             >
-              Fırat Convert
+              Firat Convert
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-300"
             >
-              Excel/CSV Dosyalarından Otomatik Raporlama ve Veri Görselleştirme
+              Automatic Reporting and Data Visualization from Excel/CSV Files
             </motion.p>
           </div>
 
@@ -453,38 +453,38 @@ export default function FiratConvert() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
-                  <span className="mt-2 text-sm text-gray-300">Yükle</span>
+                  <span className="mt-2 text-sm text-gray-300">Upload</span>
                 </div>
-                
+
                 <div className={`flex-1 h-0.5 ${step === 'upload' ? 'bg-gray-700' : 'bg-teal-600'}`}></div>
-                
+
                 <div className="flex flex-col items-center">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center ${step === 'analyze' ? 'bg-teal-500' : step === 'visualize' ? 'bg-teal-700' : 'bg-gray-700'}`}>
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <span className="mt-2 text-sm text-gray-300">Analiz Et</span>
+                  <span className="mt-2 text-sm text-gray-300">Analyze</span>
                 </div>
-                
+
                 <div className={`flex-1 h-0.5 ${step === 'visualize' ? 'bg-teal-600' : 'bg-gray-700'}`}></div>
-                
+
                 <div className="flex flex-col items-center">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center ${step === 'visualize' ? 'bg-teal-500' : 'bg-gray-700'}`}>
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
-                  <span className="mt-2 text-sm text-gray-300">Görselleştir</span>
+                  <span className="mt-2 text-sm text-gray-300">Visualize</span>
                 </div>
               </div>
             </div>
-            
+
             {/* Dosya Yükleme Bölümü */}
             <div className="mb-8">
               <div className="max-w-md mx-auto">
                 <label htmlFor="file-upload" className="block text-sm font-medium text-gray-300 mb-2">
-                  Excel veya CSV Dosyası
+                  Excel or CSV File
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-gray-600 rounded-lg">
                   <div className="space-y-1 text-center">
@@ -493,43 +493,43 @@ export default function FiratConvert() {
                     </svg>
                     <div className="flex text-sm text-gray-400">
                       <label htmlFor="file-upload" className="relative cursor-pointer rounded-md font-medium text-teal-500 hover:text-teal-400">
-                        <span>Dosya Yükle</span>
-                        <input 
-                          id="file-upload" 
-                          name="file-upload" 
-                          type="file" 
-                          className="sr-only" 
+                        <span>Upload File</span>
+                        <input
+                          id="file-upload"
+                          name="file-upload"
+                          type="file"
+                          className="sr-only"
                           onChange={handleFileChange}
                           accept=".xlsx,.xls,.csv"
                         />
                       </label>
-                      <p className="pl-1">ya da sürükle bırak</p>
+                      <p className="pl-1">or drag and drop</p>
                     </div>
                     <p className="text-xs text-gray-400">
-                      XLSX, XLS veya CSV dosyaları
+                      XLSX, XLS or CSV files
                     </p>
                     {file && (
                       <p className="text-sm text-teal-400 mt-2">
-                        Yüklenen: {file.name}
+                        Uploaded: {file.name}
                       </p>
                     )}
                     {isAnalyzing && (
                       <p className="text-sm text-yellow-400 mt-2">
-                        Dosya işleniyor...
+                        Processing file...
                       </p>
                     )}
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Analiz ve Görselleştirme Bölümü */}
             {step !== 'upload' && sheetData && (
               <div>
                 {/* Sütun Seçimi */}
                 <div className="mb-8 max-w-md mx-auto">
                   <label htmlFor="column-select" className="block text-sm font-medium text-gray-300 mb-2">
-                    Analiz Edilecek Sütun
+                    Column to Analyze
                   </label>
                   <select
                     id="column-select"
@@ -539,33 +539,33 @@ export default function FiratConvert() {
                   >
                     {columns.map(col => (
                       <option key={col} value={col}>
-                        {col} {numericalColumns.includes(col) ? '(Sayısal)' : '(Metin)'}
+                        {col} {numericalColumns.includes(col) ? '(Numerical)' : '(Text)'}
                       </option>
                     ))}
                   </select>
                 </div>
-                
+
                 {/* İstatistikler */}
                 {stats && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <h3 className="text-lg font-medium text-gray-300 mb-2">Veri Sayısı</h3>
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">Data Count</h3>
                       <p className="text-2xl font-bold text-white">{stats.count}</p>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <h3 className="text-lg font-medium text-gray-300 mb-2">Ortalama</h3>
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">Average</h3>
                       <p className="text-2xl font-bold text-white">{stats.average.toFixed(2)}</p>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <h3 className="text-lg font-medium text-gray-300 mb-2">Toplam</h3>
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">Total</h3>
                       <p className="text-2xl font-bold text-white">{stats.sum.toFixed(2)}</p>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <h3 className="text-lg font-medium text-gray-300 mb-2">Medyan</h3>
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">Median</h3>
                       <p className="text-2xl font-bold text-white">{stats.median.toFixed(2)}</p>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-                      <h3 className="text-lg font-medium text-gray-300 mb-2">Maksimum</h3>
+                      <h3 className="text-lg font-medium text-gray-300 mb-2">Maximum</h3>
                       <p className="text-2xl font-bold text-white">{stats.max.toFixed(2)}</p>
                     </div>
                     <div className="bg-gray-800/50 rounded-lg p-4 text-center">
@@ -574,33 +574,33 @@ export default function FiratConvert() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Grafik Kontrolleri */}
                 <div className="flex justify-center mb-6">
                   <div className="inline-flex rounded-md" role="group">
                     <button
                       type="button"
                       className={`px-4 py-2 text-sm font-medium rounded-l-lg 
-                        ${chartType === 'bar' 
-                          ? 'bg-teal-600 text-white' 
+                        ${chartType === 'bar'
+                          ? 'bg-teal-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
                       onClick={() => handleChartTypeChange('bar')}
                     >
-                      Çubuk Grafik
+                      Bar Chart
                     </button>
                     <button
                       type="button"
                       className={`px-4 py-2 text-sm font-medium rounded-r-lg 
-                        ${chartType === 'pie' 
-                          ? 'bg-teal-600 text-white' 
+                        ${chartType === 'pie'
+                          ? 'bg-teal-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
                       onClick={() => handleChartTypeChange('pie')}
                     >
-                      Pasta Grafik
+                      Pie Chart
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Grafik */}
                 <div className="max-w-5xl mx-auto p-4 bg-gray-800/50 rounded-lg" ref={chartRef}>
                   <div className="h-[400px] flex items-center justify-center">
@@ -611,11 +611,11 @@ export default function FiratConvert() {
                         <Pie data={prepareChartData()!} options={chartOptions} />
                       )
                     ) : (
-                      <p className="text-gray-400">Grafik oluşturulamadı. Lütfen geçerli bir sütun seçin.</p>
+                      <p className="text-gray-400">Could not create chart. Please select a valid column.</p>
                     )}
                   </div>
                 </div>
-                
+
                 {/* PDF İndirme Butonu */}
                 <div className="mt-8 text-center">
                   <button
@@ -626,23 +626,23 @@ export default function FiratConvert() {
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    PDF Olarak İndir
+                    Download as PDF
                   </button>
                 </div>
               </div>
             )}
           </motion.div>
-          
+
           {/* Geri Git Butonu */}
           <div className="mt-12 text-center">
             <Link
-              href="/portfolio" 
+              href="/portfolio"
               className="inline-flex items-center text-teal-500 hover:text-teal-400"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Portfolyoya Geri Dön
+              Return to Portfolio
             </Link>
           </div>
         </div>

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Portfolio & Blog",
-  description: "Kişisel portfolyo ve blog sitesi",
+  description: "Personal portfolio and blog website",
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <body className={inter.className}>
         <ClientLayout>{children}</ClientLayout>
       </body>

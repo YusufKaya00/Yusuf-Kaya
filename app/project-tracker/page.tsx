@@ -124,14 +124,14 @@ export default function ProjectTracker() {
   const [modalType, setModalType] = useState<'project' | 'task' | 'member'>('project');
   const [isEditing, setIsEditing] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
-  
+
   // Yerel depolama işlemleri
   useEffect(() => {
     // LocalStorage'dan verileri yükleme
     const savedProjects = localStorage.getItem('projects');
     const savedTasks = localStorage.getItem('tasks');
     const savedMembers = localStorage.getItem('teamMembers');
-    
+
     if (savedProjects) {
       try {
         const parsed = JSON.parse(savedProjects);
@@ -143,7 +143,7 @@ export default function ProjectTracker() {
           createdAt: project.createdAt ? new Date(project.createdAt) : undefined
         }));
         setProjects(projectsWithDates);
-        
+
         // İlk proje varsa onu seç
         if (projectsWithDates.length > 0) {
           setCurrentProject(projectsWithDates[0]);
@@ -152,7 +152,7 @@ export default function ProjectTracker() {
         console.error('Projects parsing error:', error);
       }
     }
-    
+
     if (savedTasks) {
       try {
         const parsed = JSON.parse(savedTasks);
@@ -167,7 +167,7 @@ export default function ProjectTracker() {
         console.error('Tasks parsing error:', error);
       }
     }
-    
+
     if (savedMembers) {
       try {
         const parsed = JSON.parse(savedMembers);
@@ -177,20 +177,20 @@ export default function ProjectTracker() {
       }
     }
   }, []);
-  
+
   // Verileri güncellediğimizde localStorage'a kaydet
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects));
   }, [projects]);
-  
+
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }, [tasks]);
-  
+
   useEffect(() => {
     localStorage.setItem('teamMembers', JSON.stringify(teamMembers));
   }, [teamMembers]);
-  
+
   // Modal açma fonksiyonları
   const openProjectModal = (project: Project | null = null) => {
     setModalType('project');
@@ -198,21 +198,21 @@ export default function ProjectTracker() {
     setEditItem(project);
     setIsModalOpen(true);
   };
-  
+
   const openTaskModal = (task: Task | null = null) => {
     setModalType('task');
     setIsEditing(!!task);
     setEditItem(task);
     setIsModalOpen(true);
   };
-  
+
   const openMemberModal = (member: TeamMember | null = null) => {
     setModalType('member');
     setIsEditing(!!member);
     setEditItem(member);
     setIsModalOpen(true);
   };
-  
+
   // Veri ekleme/güncelleme fonksiyonları
   const addProject = (project: Project) => {
     const newProject = {
@@ -224,9 +224,9 @@ export default function ProjectTracker() {
     if (!currentProject) setCurrentProject(newProject);
     setIsModalOpen(false);
   };
-  
+
   const updateProject = (project: Project) => {
-    const updatedProjects = projects.map(p => 
+    const updatedProjects = projects.map(p =>
       p.id === project.id ? project : p
     );
     setProjects(updatedProjects);
@@ -235,21 +235,21 @@ export default function ProjectTracker() {
     }
     setIsModalOpen(false);
   };
-  
+
   const deleteProject = (projectId: string) => {
     const updatedProjects = projects.filter(p => p.id !== projectId);
     setProjects(updatedProjects);
-    
+
     // Projeye ait görevleri de sil
     const updatedTasks = tasks.filter(t => t.projectId !== projectId);
     setTasks(updatedTasks);
-    
+
     // Eğer mevcut proje siliniyorsa başka bir projeye geç
     if (currentProject && currentProject.id === projectId) {
       setCurrentProject(updatedProjects.length > 0 ? updatedProjects[0] : null);
     }
   };
-  
+
   const addTask = (task: Task) => {
     const newTask = {
       ...task,
@@ -259,27 +259,27 @@ export default function ProjectTracker() {
     setTasks([...tasks, newTask]);
     setIsModalOpen(false);
   };
-  
+
   const updateTask = (task: Task) => {
-    const updatedTasks = tasks.map(t => 
+    const updatedTasks = tasks.map(t =>
       t.id === task.id ? task : t
     );
     setTasks(updatedTasks);
     setIsModalOpen(false);
   };
-  
+
   const deleteTask = (taskId: string) => {
     const updatedTasks = tasks.filter(t => t.id !== taskId);
     setTasks(updatedTasks);
   };
-  
+
   const updateTaskProgress = (taskId: string, progress: number) => {
-    const updatedTasks = tasks.map(task => 
+    const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, progress } : task
     );
     setTasks(updatedTasks);
   };
-  
+
   const addTeamMember = (member: TeamMember) => {
     const newMember = {
       ...member,
@@ -289,29 +289,29 @@ export default function ProjectTracker() {
     setTeamMembers([...teamMembers, newMember]);
     setIsModalOpen(false);
   };
-  
+
   const updateTeamMember = (member: TeamMember) => {
-    const updatedMembers = teamMembers.map(m => 
+    const updatedMembers = teamMembers.map(m =>
       m.id === member.id ? member : m
     );
     setTeamMembers(updatedMembers);
     setIsModalOpen(false);
   };
-  
+
   const deleteTeamMember = (memberId: string) => {
     // Önce bu ekip üyesine atanmış görevleri unassign yap
-    const updatedTasks = tasks.map(task => 
-      task.assignedTo === memberId 
-        ? { ...task, assignedTo: undefined } 
+    const updatedTasks = tasks.map(task =>
+      task.assignedTo === memberId
+        ? { ...task, assignedTo: undefined }
         : task
     );
     setTasks(updatedTasks);
-    
+
     // Sonra ekip üyesini sil
     const updatedMembers = teamMembers.filter(m => m.id !== memberId);
     setTeamMembers(updatedMembers);
   };
-  
+
   // Proje değiştirme
   const changeProject = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
@@ -319,7 +319,7 @@ export default function ProjectTracker() {
       setCurrentProject(project);
     }
   };
-  
+
   // Mevcut projeye ait görevleri filtrele
   const currentTasks = tasks.filter(
     task => currentProject && task.projectId === currentProject.id
@@ -334,20 +334,20 @@ export default function ProjectTracker() {
       <div className="relative z-20 pt-16 pb-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <motion.h1 
+            <motion.h1
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               className="text-4xl font-bold text-white mb-4"
             >
-              Proje Takip ve Gantt
+              Project Tracking & Gantt
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-300"
             >
-              Projelerinizi ve görevlerinizi organize edin, ekip üyelerine atayın ve ilerlemeyi takip edin
+              Organize your projects and tasks, assign to team members, and track progress
             </motion.p>
           </div>
 
@@ -361,15 +361,15 @@ export default function ProjectTracker() {
             {/* Proje Seçimi ve Butonlar */}
             <div className="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center">
               <div className="flex items-center space-x-4 mb-4 md:mb-0">
-                <label className="text-gray-300 font-medium">Proje:</label>
-                <select 
+                <label className="text-gray-300 font-medium">Project:</label>
+                <select
                   className="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2"
                   value={currentProject?.id || ''}
                   onChange={(e) => changeProject(e.target.value)}
                   disabled={projects.length === 0}
                 >
                   {projects.length === 0 ? (
-                    <option>Proje Bulunamadı</option>
+                    <option>No Projects Found</option>
                   ) : (
                     projects.map(project => (
                       <option key={project.id} value={project.id}>
@@ -379,50 +379,50 @@ export default function ProjectTracker() {
                   )}
                 </select>
               </div>
-              
+
               <div className="flex space-x-3">
                 <button
                   onClick={() => openProjectModal()}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
-                  + Yeni Proje
+                  + New Project
                 </button>
                 <button
                   onClick={() => openTaskModal()}
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                   disabled={!currentProject}
                 >
-                  + Yeni Görev
+                  + New Task
                 </button>
                 <button
                   onClick={() => openMemberModal()}
                   className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium"
                 >
-                  + Ekip Üyesi
+                  + Team Member
                 </button>
               </div>
             </div>
-            
+
             {currentProject ? (
               <div className="flex flex-col lg:flex-row">
                 {/* Sol Panel: Görevler ve Ekip */}
                 <div className="lg:w-1/3 border-r border-gray-700">
                   {/* Görev Listesi */}
                   <div className="p-4 border-b border-gray-700">
-                    <h3 className="text-xl font-semibold text-white mb-4">Görevler</h3>
-                    <TaskList 
-                      tasks={currentTasks} 
+                    <h3 className="text-xl font-semibold text-white mb-4">Tasks</h3>
+                    <TaskList
+                      tasks={currentTasks}
                       teamMembers={teamMembers}
                       onEditTask={openTaskModal}
                       onDeleteTask={deleteTask}
                       onUpdateProgress={updateTaskProgress}
                     />
                   </div>
-                  
+
                   {/* Ekip Üyeleri */}
                   <div className="p-4">
-                    <h3 className="text-xl font-semibold text-white mb-4">Ekip Üyeleri</h3>
-                    <TeamMemberPanel 
+                    <h3 className="text-xl font-semibold text-white mb-4">Team Members</h3>
+                    <TeamMemberPanel
                       members={teamMembers}
                       tasks={tasks}
                       onEditMember={openMemberModal}
@@ -430,23 +430,23 @@ export default function ProjectTracker() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Sağ Panel: Gantt Diyagramı */}
                 <div className="lg:w-2/3 p-4">
-                  <h3 className="text-xl font-semibold text-white mb-4">Gantt Diyagramı</h3>
-                  <ProjectGanttChart 
-                    tasks={currentTasks} 
+                  <h3 className="text-xl font-semibold text-white mb-4">Gantt Chart</h3>
+                  <ProjectGanttChart
+                    tasks={currentTasks}
                     teamMembers={teamMembers}
                   />
                 </div>
               </div>
             ) : (
               <div className="p-8 text-center text-gray-400">
-                <p>Henüz bir proje oluşturulmamış. Başlamak için "Yeni Proje" butonuna tıklayın.</p>
+                <p>No project created yet. Click "New Project" button to get started.</p>
               </div>
             )}
           </motion.div>
-          
+
           {/* Proje Detayları (current project seçiliyse) */}
           {currentProject && (
             <motion.div
@@ -460,78 +460,78 @@ export default function ProjectTracker() {
                   <h2 className="text-2xl font-bold text-white">{currentProject.name}</h2>
                   <p className="text-gray-400 mt-1">{currentProject.description}</p>
                   <div className="mt-3 text-sm text-gray-400">
-                    <p>Başlangıç: {moment(currentProject.startDate).format('DD.MM.YYYY')}</p>
-                    <p>Bitiş: {moment(currentProject.endDate).format('DD.MM.YYYY')}</p>
+                    <p>Start: {moment(currentProject.startDate).format('DD.MM.YYYY')}</p>
+                    <p>End: {moment(currentProject.endDate).format('DD.MM.YYYY')}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex space-x-2">
                   <button
                     onClick={() => openProjectModal(currentProject)}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
                   >
-                    Düzenle
+                    Edit
                   </button>
                   <button
                     onClick={() => {
-                      if (window.confirm('Projeyi silmek istediğinizden emin misiniz?')) {
+                      if (window.confirm('Are you sure you want to delete this project?')) {
                         deleteProject(currentProject.id);
                       }
                     }}
                     className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
                   >
-                    Sil
+                    Delete
                   </button>
                 </div>
               </div>
-              
+
               {/* Proje İlerleme Durumu */}
               <div className="mt-6">
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-300">İlerleme</span>
+                  <span className="text-sm text-gray-300">Progress</span>
                   <span className="text-sm text-gray-300">
-                    {tasks.length > 0 
+                    {tasks.length > 0
                       ? Math.floor(tasks
-                          .filter(t => t.projectId === currentProject.id)
-                          .reduce((acc, t) => acc + t.progress, 0) / 
-                          Math.max(1, tasks.filter(t => t.projectId === currentProject.id).length)
-                        )
+                        .filter(t => t.projectId === currentProject.id)
+                        .reduce((acc, t) => acc + t.progress, 0) /
+                        Math.max(1, tasks.filter(t => t.projectId === currentProject.id).length)
+                      )
                       : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2.5">
-                  <div 
-                    className="bg-blue-600 h-2.5 rounded-full" 
-                    style={{ 
-                      width: `${tasks.length > 0 
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full"
+                    style={{
+                      width: `${tasks.length > 0
                         ? Math.floor(tasks
-                            .filter(t => t.projectId === currentProject.id)
-                            .reduce((acc, t) => acc + t.progress, 0) / 
-                            Math.max(1, tasks.filter(t => t.projectId === currentProject.id).length)
-                          )
-                        : 0}%` 
+                          .filter(t => t.projectId === currentProject.id)
+                          .reduce((acc, t) => acc + t.progress, 0) /
+                          Math.max(1, tasks.filter(t => t.projectId === currentProject.id).length)
+                        )
+                        : 0}%`
                     }}
                   ></div>
                 </div>
               </div>
             </motion.div>
           )}
-          
+
           {/* Geri Git Butonu */}
           <div className="mt-8 text-center">
             <Link
-              href="/portfolio" 
+              href="/portfolio"
               className="inline-flex items-center text-blue-400 hover:text-blue-300"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Portfolyoya Geri Dön
+              Back to Portfolio
             </Link>
           </div>
         </div>
       </div>
-      
+
       {/* Modal */}
       {isModalOpen && (
         <>
@@ -542,7 +542,7 @@ export default function ProjectTracker() {
               onCancel={() => setIsModalOpen(false)}
             />
           )}
-          
+
           {modalType === 'task' && currentProject && (
             <TaskForm
               projectId={currentProject.id}
@@ -554,7 +554,7 @@ export default function ProjectTracker() {
               onCancel={() => setIsModalOpen(false)}
             />
           )}
-          
+
           {modalType === 'member' && (
             <TeamMemberForm
               member={isEditing ? editItem : undefined}

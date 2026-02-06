@@ -18,13 +18,13 @@ export default function AdminPage() {
   const [photoCount, setPhotoCount] = useState(0);
   const [surveyCount, setSurveyCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  
+
   // Kimlik doğrulama için
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
-  
+
   // Sayfa yüklendiğinde oturum durumunu kontrol et
   useEffect(() => {
     const authStatus = sessionStorage.getItem('adminAuthenticated');
@@ -32,11 +32,11 @@ export default function AdminPage() {
       setIsAuthenticated(true);
     }
   }, []);
-  
+
   // Giriş fonksiyonu
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (username === 'sky' && password === 'bsd') {
       setIsAuthenticated(true);
       sessionStorage.setItem('adminAuthenticated', 'true');
@@ -45,13 +45,13 @@ export default function AdminPage() {
       setAuthError('Geçersiz kullanıcı adı veya şifre!');
     }
   };
-  
+
   // Çıkış fonksiyonu
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('adminAuthenticated');
   };
-  
+
   // Ziyaretçi sayısını artırma fonksiyonu
   const incrementVisitorCount = () => {
     setTotalVisits(prev => {
@@ -119,12 +119,12 @@ export default function AdminPage() {
       if (Math.random() < 0.7) {
         incrementVisitorCount();
       }
-      
+
       // Bir sonraki ziyareti 3-15 saniye arasında rastgele zamanla
       const nextVisitTime = Math.floor(Math.random() * 12000) + 3000;
       setTimeout(simulateVisitors, nextVisitTime);
     };
-    
+
     // İlk ziyaretçi simülasyonunu başlat
     const initialDelay = Math.floor(Math.random() * 5000) + 2000;
     setTimeout(simulateVisitors, initialDelay);
@@ -139,21 +139,21 @@ export default function AdminPage() {
   const incrementLikes = () => {
     const newLikes = totalLikes + 1;
     setTotalLikes(newLikes);
-    
+
     // Mevcut blog yazılarını al
     const savedPosts = localStorage.getItem('posts');
     if (savedPosts) {
       const posts = JSON.parse(savedPosts) as BlogPost[];
-      
+
       // Rastgele bir yazıya beğeni ekle
       if (posts.length > 0) {
         const randomIndex = Math.floor(Math.random() * posts.length);
         const selectedPost = posts[randomIndex];
-        
+
         if (!selectedPost.likes) selectedPost.likes = [];
         selectedPost.likes.push(`user-${Date.now()}`);
-        
-        // Güncellenmiş veriyi kaydet
+
+        // Save updated data
         localStorage.setItem('posts', JSON.stringify(posts));
       }
     }
@@ -167,33 +167,33 @@ export default function AdminPage() {
         incrementLikes();
       }
     }, 8000);
-    
+
     return () => clearInterval(likesInterval);
   }, [totalLikes]);
 
-  // Eğer kimlik doğrulama yapılmamışsa, giriş formunu göster
+  // If not authenticated, show login form
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="max-w-md w-full p-8 bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-700"
         >
-          <h2 className="text-3xl font-bold text-white mb-6 text-center">Admin Paneli</h2>
-          <p className="text-gray-400 mb-8 text-center">Lütfen giriş bilgilerinizi giriniz</p>
-          
+          <h2 className="text-3xl font-bold text-white mb-6 text-center">Admin Panel</h2>
+          <p className="text-gray-400 mb-8 text-center">Please enter your login credentials</p>
+
           {authError && (
             <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded mb-6">
               <p>{authError}</p>
             </div>
           )}
-          
+
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-300">
-                Kullanıcı Adı
+                Username
               </label>
               <input
                 id="username"
@@ -205,10 +205,10 @@ export default function AdminPage() {
                 className="mt-1 block w-full bg-gray-700/50 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                Şifre
+                Password
               </label>
               <input
                 id="password"
@@ -220,23 +220,23 @@ export default function AdminPage() {
                 className="mt-1 block w-full bg-gray-700/50 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
-            
+
             <div>
               <button
                 type="submit"
                 className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Giriş Yap
+                Login
               </button>
             </div>
           </form>
-          
+
           <div className="mt-6">
             <Link href="/" className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center justify-center">
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Ana Sayfaya Dön
+              Return to Home Page
             </Link>
           </div>
         </motion.div>
@@ -247,27 +247,27 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="mb-12 flex justify-between items-center"
         >
           <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Admin Paneli</h1>
-            <p className="text-gray-400">Site yönetimi için gerekli araçları buradan kullanabilirsiniz.</p>
+            <h1 className="text-4xl font-bold text-white mb-2">Admin Panel</h1>
+            <p className="text-gray-400">You can use the necessary tools for site management from here.</p>
           </div>
-          
+
           <button
             onClick={handleLogout}
             className="px-4 py-2 bg-red-600/30 hover:bg-red-600/50 text-red-200 rounded-lg border border-red-500/30 transition-colors"
           >
-            Çıkış Yap
+            Logout
           </button>
         </motion.div>
 
         {/* İstatistik Kartları */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -277,7 +277,7 @@ export default function AdminPage() {
           <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 rounded-xl p-6 shadow-lg border border-blue-800/50 backdrop-blur-sm">
             <div className="flex justify-between">
               <div>
-                <p className="text-blue-300 text-sm font-medium">Toplam Ziyaretçi</p>
+                <p className="text-blue-300 text-sm font-medium">Total Visitors</p>
                 <h3 className="text-white text-2xl font-bold mt-1">
                   {loading ? (
                     <div className="h-8 w-16 bg-blue-700/50 animate-pulse rounded"></div>
@@ -305,7 +305,7 @@ export default function AdminPage() {
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                <span>Canlı İzleniyor</span>
+                <span>Live Tracking</span>
               </div>
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function AdminPage() {
           <div className="bg-gradient-to-br from-red-900/50 to-red-800/50 rounded-xl p-6 shadow-lg border border-red-800/50 backdrop-blur-sm">
             <div className="flex justify-between">
               <div>
-                <p className="text-red-300 text-sm font-medium">Toplam Beğeni</p>
+                <p className="text-red-300 text-sm font-medium">Total Likes</p>
                 <h3 className="text-white text-2xl font-bold mt-1">
                   {loading ? (
                     <div className="h-8 w-16 bg-red-700/50 animate-pulse rounded"></div>
@@ -341,7 +341,7 @@ export default function AdminPage() {
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                <span>Canlı İzleniyor</span>
+                <span>Live Tracking</span>
               </div>
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function AdminPage() {
           <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 rounded-xl p-6 shadow-lg border border-purple-800/50 backdrop-blur-sm">
             <div className="flex justify-between">
               <div>
-                <p className="text-purple-300 text-sm font-medium">Blog Yazıları</p>
+                <p className="text-purple-300 text-sm font-medium">Blog Posts</p>
                 <h3 className="text-white text-2xl font-bold mt-1">
                   {loading ? (
                     <div className="h-8 w-16 bg-purple-700/50 animate-pulse rounded"></div>
@@ -378,16 +378,16 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span>Yönet</span>
+                <span>Manage</span>
               </Link>
             </div>
           </div>
-          
+
           {/* Fotoğraflar */}
           <div className="bg-gradient-to-br from-pink-900/50 to-pink-800/50 rounded-xl p-6 shadow-lg border border-pink-800/50 backdrop-blur-sm">
             <div className="flex justify-between">
               <div>
-                <p className="text-pink-300 text-sm font-medium">Fotoğraflar</p>
+                <p className="text-pink-300 text-sm font-medium">Photos</p>
                 <h3 className="text-white text-2xl font-bold mt-1">
                   {loading ? (
                     <div className="h-8 w-16 bg-pink-700/50 animate-pulse rounded"></div>
@@ -415,7 +415,7 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span>Yönet</span>
+                <span>Manage</span>
               </Link>
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function AdminPage() {
           <div className="bg-gradient-to-br from-green-900/50 to-green-800/50 rounded-xl p-6 shadow-lg border border-green-800/50 backdrop-blur-sm">
             <div className="flex justify-between">
               <div>
-                <p className="text-green-300 text-sm font-medium">Anketler</p>
+                <p className="text-green-300 text-sm font-medium">Surveys</p>
                 <h3 className="text-white text-2xl font-bold mt-1">
                   {loading ? (
                     <div className="h-8 w-16 bg-green-700/50 animate-pulse rounded"></div>
@@ -452,13 +452,34 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span>Yönet</span>
+                <span>Manage</span>
               </Link>
             </div>
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Projeler Yönetimi */}
+          <Link href="/admin/projects">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-gray-800/50 rounded-xl shadow-2xl overflow-hidden border border-gray-700 backdrop-blur-sm p-8 hover:border-cyan-500 transition-all duration-300 cursor-pointer"
+            >
+              <div className="flex items-center justify-center mb-6">
+                <svg className="w-20 h-20 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Project Management</h2>
+              <p className="text-gray-400 text-center">Add, edit, and manage projects on the homepage.</p>
+              <div className="mt-6 flex justify-center">
+                <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-cyan-900/50 text-cyan-400">
+                  Image Upload
+                </span>
+              </div>
+            </motion.div>
+          </Link>
+
           <Link href="/admin/blog">
             <motion.div
               whileHover={{ scale: 1.03 }}
@@ -469,11 +490,11 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Blog Yönetimi</h2>
-              <p className="text-gray-400 text-center">Blog yazılarını ekleyin, düzenleyin ve yönetin. AI destekli içerik oluşturma özelliğini kullanın.</p>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Blog Management</h2>
+              <p className="text-gray-400 text-center">Add, edit, and manage blog posts. Use AI-powered content creation feature.</p>
               <div className="mt-6 flex justify-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-indigo-900/50 text-indigo-400">
-                  Gemini AI Destekli
+                  Gemini AI Powered
                 </span>
               </div>
             </motion.div>
@@ -489,11 +510,11 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Fotoğraf Paylaşım Yönetimi</h2>
-              <p className="text-gray-400 text-center">Kullanıcı fotoğraflarını yönetin, etkinlikler oluşturun ve içerikleri düzenleyin.</p>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Photo Sharing Management</h2>
+              <p className="text-gray-400 text-center">Manage user photos, create events, and organize content.</p>
               <div className="mt-6 flex justify-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-pink-900/50 text-pink-400">
-                  Etkinlik Yönetimi
+                  Event Management
                 </span>
               </div>
             </motion.div>
@@ -509,11 +530,31 @@ export default function AdminPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-4 text-center">Anket Yönetimi</h2>
-              <p className="text-gray-400 text-center">Anketleri düzenleyin ve silin, kullanıcı cevaplarını analiz edin ve raporlar oluşturun.</p>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Survey Management</h2>
+              <p className="text-gray-400 text-center">Edit and delete surveys, analyze user responses, and create reports.</p>
               <div className="mt-6 flex justify-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-green-900/50 text-green-400">
-                  Veri Analitiği
+                  Data Analytics
+                </span>
+              </div>
+            </motion.div>
+          </Link>
+
+          <Link href="/admin/cv">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              className="bg-gray-800/50 rounded-xl shadow-2xl overflow-hidden border border-gray-700 backdrop-blur-sm p-8 hover:border-orange-500 transition-all duration-300 cursor-pointer"
+            >
+              <div className="flex items-center justify-center mb-6">
+                <svg className="w-20 h-20 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">CV Management</h2>
+              <p className="text-gray-400 text-center">Upload and manage your personal CV file.</p>
+              <div className="mt-6 flex justify-center">
+                <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-orange-900/50 text-orange-400">
+                  File Upload
                 </span>
               </div>
             </motion.div>

@@ -35,7 +35,7 @@ export default function PhotoSharing() {
         {
           id: '1',
           url: 'https://images.unsplash.com/photo-1551963831-b3b1ca40c98e',
-          description: 'Güzel bir manzara fotoğrafı',
+          description: 'A beautiful landscape photo',
           userId: '1',
           eventId: '1',
           tags: ['manzara', 'doğa', 'huzur'],
@@ -49,7 +49,7 @@ export default function PhotoSharing() {
         {
           id: '2',
           url: 'https://images.unsplash.com/photo-1551782450-a2132b4ba21d',
-          description: 'Şehir hayatı',
+          description: 'City life',
           userId: '2',
           eventId: '1',
           tags: ['şehir', 'mimari', 'modern'],
@@ -117,13 +117,13 @@ export default function PhotoSharing() {
       setFilteredPhotos([]);
       return;
     }
-    
+
     let filtered = photos.filter(photo => photo.eventId === selectedEvent.id);
-    
+
     if (selectedTag) {
       filtered = filtered.filter(photo => photo.tags.includes(selectedTag));
     }
-    
+
     setFilteredPhotos(filtered);
   }, [photos, selectedEvent, selectedTag]);
 
@@ -133,9 +133,9 @@ export default function PhotoSharing() {
       setAllTags([]);
       return;
     }
-    
+
     const tagsMap = new Map<string, number>();
-    
+
     photos
       .filter(photo => photo.eventId === selectedEvent.id)
       .forEach(photo => {
@@ -144,13 +144,13 @@ export default function PhotoSharing() {
           tagsMap.set(tag, count + 1);
         });
       });
-    
+
     const tagsList: Tag[] = Array.from(tagsMap.entries()).map(([name, count]) => ({
       id: name,
       name,
       count
     }));
-    
+
     setAllTags(tagsList);
   }, [photos, selectedEvent]);
 
@@ -183,7 +183,7 @@ export default function PhotoSharing() {
   // Beğeni ekleme/kaldırma
   const handleLike = (photoId: string) => {
     if (!currentUser) return;
-    
+
     const updatedPhotos = photos.map(photo => {
       if (photo.id === photoId) {
         const isLiked = photo.likes.includes(currentUser.id);
@@ -196,7 +196,7 @@ export default function PhotoSharing() {
       }
       return photo;
     });
-    
+
     setPhotos(updatedPhotos);
     localStorage.setItem('photoSharingPhotos', JSON.stringify(updatedPhotos));
   };
@@ -204,7 +204,7 @@ export default function PhotoSharing() {
   // Yorum ekleme
   const handleComment = (photoId: string, text: string) => {
     if (!currentUser || !text.trim()) return;
-    
+
     const newComment: Comment = {
       id: Date.now().toString(),
       photoId,
@@ -212,7 +212,7 @@ export default function PhotoSharing() {
       text,
       createdAt: new Date().toISOString()
     };
-    
+
     const updatedPhotos = photos.map(photo => {
       if (photo.id === photoId) {
         return {
@@ -222,7 +222,7 @@ export default function PhotoSharing() {
       }
       return photo;
     });
-    
+
     setPhotos(updatedPhotos);
     localStorage.setItem('photoSharingPhotos', JSON.stringify(updatedPhotos));
   };
@@ -245,8 +245,8 @@ export default function PhotoSharing() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400 mb-2">Fotoğraf Paylaşım Uygulaması</h1>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">Etkinlik seçerek fotoğraflarınızı paylaşın, etiketleyin ve diğerleriyle etkileşime geçin.</p>
+          <h1 className="text-3xl font-bold text-pink-600 dark:text-pink-400 mb-2">Photo Sharing App</h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Select an event to share, tag, and interact with photos.</p>
 
           {/* Etkinlik Seçimi */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
@@ -257,8 +257,8 @@ export default function PhotoSharing() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedEvent(selectedEvent?.id === event.id ? null : event)}
                 className={`p-4 rounded-lg shadow-md cursor-pointer 
-                  ${selectedEvent?.id === event.id 
-                    ? 'bg-pink-100 dark:bg-pink-900/30 border-2 border-pink-500' 
+                  ${selectedEvent?.id === event.id
+                    ? 'bg-pink-100 dark:bg-pink-900/30 border-2 border-pink-500'
                     : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-pink-300 dark:hover:border-pink-700'
                   } transition-all duration-200`}
               >
@@ -276,7 +276,7 @@ export default function PhotoSharing() {
                 </div>
                 <div className="mt-3 text-right">
                   <span className="text-xs px-2 py-1 bg-pink-100 dark:bg-pink-900/20 text-pink-800 dark:text-pink-300 rounded-full">
-                    {photos.filter(p => p.eventId === event.id).length} fotoğraf
+                    {photos.filter(p => p.eventId === event.id).length} photos
                   </span>
                 </div>
               </motion.div>
@@ -293,12 +293,12 @@ export default function PhotoSharing() {
             <svg className="w-16 h-16 mx-auto text-pink-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Lütfen bir etkinlik seçin</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Please select an event</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Fotoğrafları görüntülemek ve paylaşmak için yukarıdan bir etkinlik seçmelisiniz.
+              You must select an event from above to view and share photos.
             </p>
             <p className="text-sm text-pink-600 dark:text-pink-400">
-              Her etkinlik için farklı fotoğraflar ve içerikler bulunmaktadır.
+              Each event contains different photos and content.
             </p>
           </motion.div>
         ) : (
@@ -310,14 +310,14 @@ export default function PhotoSharing() {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
               >
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Seçili Etkinlik</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Selected Event</h2>
                 <div className="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-lg border border-pink-100 dark:border-pink-800">
                   <h3 className="font-bold text-pink-600 dark:text-pink-400 mb-1">{selectedEvent.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{selectedEvent.description}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">Tarih: {new Date(selectedEvent.date).toLocaleDateString('tr-TR')}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mb-3">Date: {new Date(selectedEvent.date).toLocaleDateString('en-US')}</p>
                   <div className="text-xs text-right">
                     <span className="px-2 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full">
-                      {filteredPhotos.length} fotoğraf
+                      {filteredPhotos.length} photos
                     </span>
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function PhotoSharing() {
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
               >
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Kullanıcı</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">User</h2>
                 <div className="flex items-center mb-4">
                   {currentUser && (
                     <>
@@ -339,14 +339,14 @@ export default function PhotoSharing() {
                       />
                       <div>
                         <h3 className="font-medium text-gray-800 dark:text-white">{currentUser.name}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Aktif Kullanıcı</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Active User</p>
                       </div>
                     </>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
-                    Kullanıcı Değiştir
+                    Switch User
                   </label>
                   <select
                     value={currentUser?.id || ''}
@@ -362,13 +362,12 @@ export default function PhotoSharing() {
                   <button
                     onClick={() => setIsUploadModalOpen(true)}
                     disabled={!currentUser || !selectedEvent}
-                    className={`w-full px-4 py-2 mt-2 rounded-lg ${
-                      !currentUser || !selectedEvent
+                    className={`w-full px-4 py-2 mt-2 rounded-lg ${!currentUser || !selectedEvent
                         ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
                         : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
-                    } text-white font-medium transition-colors`}
+                      } text-white font-medium transition-colors`}
                   >
-                    Fotoğraf Paylaş
+                    Share Photo
                   </button>
                 </div>
               </motion.div>
@@ -379,13 +378,13 @@ export default function PhotoSharing() {
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white">Etiketler</h2>
+                  <h2 className="text-xl font-bold text-gray-800 dark:text-white">Tags</h2>
                   {selectedTag && (
                     <button
                       onClick={() => setSelectedTag(null)}
                       className="text-xs text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300"
                     >
-                      Filtreyi Temizle
+                      Clear Filter
                     </button>
                   )}
                 </div>
@@ -415,23 +414,22 @@ export default function PhotoSharing() {
                     />
                   </svg>
                   <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    Henüz fotoğraf yok
+                    No photos yet
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {selectedTag
-                      ? `"${selectedTag}" etiketine sahip fotoğraf bulunamadı.`
-                      : 'Bu etkinlik için henüz fotoğraf paylaşılmamış.'}
+                      ? `No photos found with "${selectedTag}" tag.`
+                      : 'No photos have been shared for this event yet.'}
                   </p>
                   <button
                     onClick={() => setIsUploadModalOpen(true)}
                     disabled={!currentUser}
-                    className={`px-4 py-2 rounded-lg ${
-                      !currentUser
+                    className={`px-4 py-2 rounded-lg ${!currentUser
                         ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
                         : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
-                    } text-white font-medium transition-colors`}
+                      } text-white font-medium transition-colors`}
                   >
-                    İlk Fotoğrafı Paylaş
+                    Share First Photo
                   </button>
                 </div>
               ) : (

@@ -28,7 +28,7 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
     endDate: moment().add(1, 'month').toDate(),
     status: 'planning'
   });
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     if (project) {
@@ -45,7 +45,7 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Hata durumunda temizle
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -55,7 +55,7 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
   const handleDateChange = (date: Date | null, fieldName: string) => {
     if (date) {
       setFormData(prev => ({ ...prev, [fieldName]: date }));
-      
+
       // Hata durumunda temizle
       if (errors[fieldName]) {
         setErrors(prev => ({ ...prev, [fieldName]: '' }));
@@ -64,23 +64,23 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
   };
 
   const validateForm = (): boolean => {
-    const newErrors: {[key: string]: string} = {};
-    
+    const newErrors: { [key: string]: string } = {};
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Proje adı zorunludur';
+      newErrors.name = 'Project name is required';
     }
-    
+
     if (moment(formData.endDate).isBefore(formData.startDate)) {
-      newErrors.endDate = 'Bitiş tarihi başlangıç tarihinden önce olamaz';
+      newErrors.endDate = 'End date cannot be before start date';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       onSave({
         id: project?.id || Date.now().toString(),
@@ -94,16 +94,16 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
       <div className="bg-gray-900 border border-gray-800 rounded-lg shadow-xl w-full max-w-md">
         <div className="border-b border-gray-800 p-4">
           <h2 className="text-lg font-medium text-white">
-            {project ? 'Projeyi Düzenle' : 'Yeni Proje Oluştur'}
+            {project ? 'Edit Project' : 'Create New Project'}
           </h2>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4">
           <div className="space-y-4">
             {/* Proje Adı */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
-                Proje Adı <span className="text-red-500">*</span>
+                Project Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -112,17 +112,17 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Proje adını girin"
+                placeholder="Enter project name"
               />
               {errors.name && (
                 <p className="mt-1 text-sm text-red-500">{errors.name}</p>
               )}
             </div>
-            
+
             {/* Açıklama */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
-                Açıklama
+                Description
               </label>
               <textarea
                 id="description"
@@ -131,15 +131,15 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                 onChange={handleChange}
                 rows={3}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Proje açıklaması girin"
+                placeholder="Enter project description"
               />
             </div>
-            
+
             {/* Tarihler */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="startDate" className="block text-sm font-medium text-gray-300 mb-1">
-                  Başlangıç Tarihi
+                  Start Date
                 </label>
                 <DatePicker
                   id="startDate"
@@ -147,13 +147,13 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                   onChange={(date) => handleDateChange(date, 'startDate')}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   dateFormat="dd/MM/yyyy"
-                  placeholderText="Başlangıç tarihi"
+                  placeholderText="Start date"
                 />
               </div>
-              
+
               <div>
                 <label htmlFor="endDate" className="block text-sm font-medium text-gray-300 mb-1">
-                  Bitiş Tarihi
+                  End Date
                 </label>
                 <DatePicker
                   id="endDate"
@@ -161,7 +161,7 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                   onChange={(date) => handleDateChange(date, 'endDate')}
                   className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   dateFormat="dd/MM/yyyy"
-                  placeholderText="Bitiş tarihi"
+                  placeholderText="End date"
                   minDate={formData.startDate}
                 />
                 {errors.endDate && (
@@ -169,11 +169,11 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                 )}
               </div>
             </div>
-            
+
             {/* Durum */}
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">
-                Durum
+                Status
               </label>
               <select
                 id="status"
@@ -182,27 +182,27 @@ export default function ProjectForm({ project, onSave, onCancel }: ProjectFormPr
                 onChange={handleChange}
                 className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="planning">Planlama</option>
-                <option value="active">Aktif</option>
-                <option value="completed">Tamamlandı</option>
-                <option value="onHold">Beklemede</option>
+                <option value="planning">Planning</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="onHold">On Hold</option>
               </select>
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end space-x-2">
             <button
               type="button"
               onClick={onCancel}
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md focus:outline-none"
             >
-              İptal
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md focus:outline-none"
             >
-              {project ? 'Güncelle' : 'Oluştur'}
+              {project ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

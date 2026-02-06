@@ -13,19 +13,19 @@ import Link from 'next/link';
 type PageView = 'list' | 'create' | 'respond' | 'results';
 
 // LocalStorage işlemleri için ayrı bir bileşen
-function LocalStorageHandler({ 
-  setSurveysCallback, 
+function LocalStorageHandler({
+  setSurveysCallback,
   setSubmissionsCallback,
   setLoadingCallback
-}: { 
-  setSurveysCallback: (surveys: Survey[]) => void, 
+}: {
+  setSurveysCallback: (surveys: Survey[]) => void,
   setSubmissionsCallback: (submissions: Submission[]) => void,
   setLoadingCallback: (loading: boolean) => void
 }) {
   useEffect(() => {
     const savedSurveys = localStorage.getItem('surveySystemSurveys');
     const savedSubmissions = localStorage.getItem('surveySystemSubmissions');
-    
+
     if (savedSurveys) {
       try {
         const parsedSurveys = JSON.parse(savedSurveys);
@@ -65,11 +65,11 @@ function LocalStorageHandler({
         isPublished: true,
         shareableLink: 'ornek-anket'
       };
-      
+
       setSurveysCallback([exampleSurvey]);
       localStorage.setItem('surveySystemSurveys', JSON.stringify([exampleSurvey]));
     }
-    
+
     if (savedSubmissions) {
       try {
         const parsedSubmissions = JSON.parse(savedSubmissions);
@@ -101,14 +101,14 @@ function LocalStorageHandler({
           submittedAt: new Date().toISOString()
         }
       ];
-      
+
       setSubmissionsCallback(exampleSubmissions);
       localStorage.setItem('surveySystemSubmissions', JSON.stringify(exampleSubmissions));
     }
-    
+
     setLoadingCallback(false);
   }, [setSurveysCallback, setSubmissionsCallback, setLoadingCallback]);
-  
+
   return null;
 }
 
@@ -129,24 +129,24 @@ export default function SurveySystem() {
       createdAt: new Date().toISOString(),
       shareableLink: encodeURIComponent(survey.title.toLowerCase().replace(/\s+/g, '-'))
     };
-    
+
     const updatedSurveys = [...surveys, newSurvey];
     setSurveys(updatedSurveys);
     localStorage.setItem('surveySystemSurveys', JSON.stringify(updatedSurveys));
-    
+
     // Listeye geri dön
     setCurrentView('list');
   };
 
   // Anket güncelleme
   const handleUpdateSurvey = (survey: Survey) => {
-    const updatedSurveys = surveys.map(s => 
+    const updatedSurveys = surveys.map(s =>
       s.id === survey.id ? survey : s
     );
-    
+
     setSurveys(updatedSurveys);
     localStorage.setItem('surveySystemSurveys', JSON.stringify(updatedSurveys));
-    
+
     // Listeye geri dön
     setCurrentView('list');
   };
@@ -156,7 +156,7 @@ export default function SurveySystem() {
     const updatedSurveys = surveys.filter(s => s.id !== surveyId);
     setSurveys(updatedSurveys);
     localStorage.setItem('surveySystemSurveys', JSON.stringify(updatedSurveys));
-    
+
     // İlgili cevapları da sil
     const updatedSubmissions = submissions.filter(s => s.surveyId !== surveyId);
     setSubmissions(updatedSubmissions);
@@ -170,11 +170,11 @@ export default function SurveySystem() {
       id: Date.now().toString(),
       submittedAt: new Date().toISOString()
     };
-    
+
     const updatedSubmissions = [...submissions, newSubmission];
     setSubmissions(updatedSubmissions);
     localStorage.setItem('surveySystemSubmissions', JSON.stringify(updatedSubmissions));
-    
+
     // Listeye geri dön
     setCurrentView('list');
   };
@@ -189,13 +189,13 @@ export default function SurveySystem() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 dark:from-gray-900 dark:to-indigo-900">
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={null}>
-          <LocalStorageHandler 
+          <LocalStorageHandler
             setSurveysCallback={setSurveys}
             setSubmissionsCallback={setSubmissions}
             setLoadingCallback={setIsLoading}
           />
         </Suspense>
-        
+
         {/* Üst Başlık */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -203,10 +203,10 @@ export default function SurveySystem() {
           className="mb-8 text-center"
         >
           <h1 className="text-3xl font-bold text-indigo-700 dark:text-indigo-400 mb-2">
-            Çevrimiçi Anket ve Form Sistemi
+            Online Survey and Form System
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Anketler oluşturun, katılım sağlayın ve sonuçları grafiklerle analiz edin. Tüm veriler tarayıcınızda saklanır.
+            Create surveys, participate, and analyze results with charts. All data is stored in your browser.
           </p>
         </motion.div>
 
@@ -217,26 +217,24 @@ export default function SurveySystem() {
           transition={{ delay: 0.1 }}
           className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mb-8 p-4 flex flex-wrap justify-center gap-4"
         >
-          <button 
+          <button
             onClick={() => navigateTo('list')}
-            className={`px-4 py-2 rounded-md transition-colors ${
-              currentView === 'list' 
-                ? 'bg-indigo-600 text-white' 
+            className={`px-4 py-2 rounded-md transition-colors ${currentView === 'list'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
-            }`}
+              }`}
           >
-            Anketler
+            Surveys
           </button>
-          
-          <button 
+
+          <button
             onClick={() => navigateTo('create')}
-            className={`px-4 py-2 rounded-md transition-colors ${
-              currentView === 'create' 
-                ? 'bg-indigo-600 text-white' 
+            className={`px-4 py-2 rounded-md transition-colors ${currentView === 'create'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
-            }`}
+              }`}
           >
-            Yeni Anket Oluştur
+            Create New Survey
           </button>
         </motion.div>
 
@@ -258,8 +256,8 @@ export default function SurveySystem() {
               transition={{ duration: 0.2 }}
             >
               {currentView === 'list' && (
-                <SurveyList 
-                  surveys={surveys} 
+                <SurveyList
+                  surveys={surveys}
                   onCreateNew={() => navigateTo('create')}
                   onRespond={(survey: Survey) => navigateTo('respond', survey)}
                   onViewResults={(survey: Survey) => navigateTo('results', survey)}
@@ -267,7 +265,7 @@ export default function SurveySystem() {
               )}
 
               {currentView === 'create' && (
-                <SurveyForm 
+                <SurveyForm
                   survey={currentSurvey}
                   onSave={currentSurvey ? handleUpdateSurvey : handleCreateSurvey}
                   onCancel={() => navigateTo('list')}
@@ -275,7 +273,7 @@ export default function SurveySystem() {
               )}
 
               {currentView === 'respond' && currentSurvey && (
-                <SurveyRespond 
+                <SurveyRespond
                   survey={currentSurvey}
                   onSubmit={(answers) => {
                     handleSubmitResponse({
@@ -290,7 +288,7 @@ export default function SurveySystem() {
               )}
 
               {currentView === 'results' && currentSurvey && (
-                <SurveyResults 
+                <SurveyResults
                   survey={currentSurvey}
                   submissions={submissions.filter(s => s.surveyId === currentSurvey.id)}
                   onBack={() => navigateTo('list')}
@@ -299,20 +297,20 @@ export default function SurveySystem() {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Geri Git Butonu */}
         <div className="mt-12 text-center">
           <div className="mb-4 text-xs text-gray-500 dark:text-gray-400">
-            Not: Anketleri düzenlemek veya silmek için <Link href="/admin/surveys" className="text-indigo-500 hover:text-indigo-400">Admin Paneli</Link>'ni kullanabilirsiniz.
+            Note: You can use the <Link href="/admin/surveys" className="text-indigo-500 hover:text-indigo-400">Admin Panel</Link> to edit or delete surveys.
           </div>
           <a
-            href="/portfolio" 
+            href="/portfolio"
             className="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
           >
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Portfolyoya Geri Dön
+            Return to Portfolio
           </a>
         </div>
       </div>

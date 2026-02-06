@@ -75,7 +75,66 @@ export default function CVGenerator() {
   });
 
   // Şablon seçimi için state
-  const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'modern' | 'minimal' | 'simple-text' | 'professional' | 'executive'>('classic');
+  const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'modern' | 'minimal' | 'simple-text' | 'professional' | 'executive' | 'portfolio' | 'portfolio-text' | 'minimal-noexp'>('classic');
+
+  // Dil seçimi için state (TR veya EN)
+  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+
+  // CV section labels for both languages
+  const labels: Record<'tr' | 'en', any> = {
+    tr: {
+      experience: 'İŞ DENEYİMİ',
+      education: 'EĞİTİM',
+      skills: 'BECERİLER',
+      languages: 'DİLLER',
+      projects: 'PROJELER',
+      links: 'BAĞLANTILAR',
+      contact: 'İLETİŞİM',
+      gpa: 'Not Ortalaması',
+      position: 'Pozisyon',
+      company: 'Şirket',
+      period: 'Dönem',
+      details: 'Detaylar...',
+      degree: 'Derece',
+      school: 'Okul',
+      skill: 'Beceri',
+      level: 'Seviye',
+      language: 'Dil',
+      fullName: 'Ad Soyad',
+      address: 'Adres',
+      phoneLabel: 'Telefon',
+      emailLabel: 'E-posta',
+      technologies: 'Teknolojiler',
+      projectName: 'Proje Adı',
+      projectDesc: 'Proje açıklaması',
+    },
+    en: {
+      experience: 'WORK EXPERIENCE',
+      education: 'EDUCATION',
+      skills: 'SKILLS',
+      languages: 'LANGUAGES',
+      projects: 'PROJECTS',
+      links: 'LINKS',
+      contact: 'CONTACT',
+      gpa: 'GPA',
+      position: 'Position',
+      company: 'Company',
+      period: 'Period',
+      details: 'Details...',
+      degree: 'Degree',
+      school: 'School',
+      skill: 'Skill',
+      level: 'Level',
+      language: 'Language',
+      fullName: 'Full Name',
+      address: 'Address',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      technologies: 'Technologies',
+      projectName: 'Project Name',
+      projectDesc: 'Project description',
+    }
+  };
 
   // ... (existing code)
 
@@ -372,7 +431,7 @@ export default function CVGenerator() {
         }
       } catch (error) {
         console.error('PDF generation failed:', error);
-        alert('PDF oluşturulurken bir hata oluştu. Lütfen tarayıcı konsolunu kontrol edin.');
+        alert('An error occurred while creating the PDF. Please check the browser console.');
       }
     }
   };
@@ -401,7 +460,7 @@ export default function CVGenerator() {
       }
     } catch (error) {
       console.error('AI CV generation failed:', error);
-      alert('CV oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+      alert('An error occurred while creating the CV. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -457,10 +516,10 @@ export default function CVGenerator() {
             <span className="text-purple-400 text-sm font-medium">CV Generator</span>
           </motion.div>
           <h1 className="text-5xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-indigo-500 mb-4">
-            CV Oluşturucu
+            CV Generator
           </h1>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Profesyonel CV'nizi AI destekli araçlarla kolayca oluşturun
+            Create your professional CV easily with AI-powered tools
           </p>
         </motion.div>
 
@@ -472,7 +531,7 @@ export default function CVGenerator() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 shadow-2xl border border-white/10"
           >
-            <h2 className="text-2xl font-semibold mb-6 text-white">Bilgileri Girin</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-white">Enter Information</h2>
 
             {/* AI Generator */}
             <div className="mb-8 rounded-xl p-5 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/20">
@@ -482,11 +541,11 @@ export default function CVGenerator() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium text-purple-300">AI ile Otomatik Oluşturma</h3>
+                <h3 className="text-xl font-medium text-purple-300">Auto-generate with AI</h3>
               </div>
               <div className="mb-4">
                 <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-300 mb-2">
-                  Deneyimleriniz hakkında birkaç cümle yazın:
+                  Write a few sentences about your experience:
                 </label>
                 <textarea
                   id="aiPrompt"
@@ -494,7 +553,7 @@ export default function CVGenerator() {
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                  placeholder="Yazılım mühendisiyim, 5 yıl deneyimim var, React ve Node.js ile çalışıyorum..."
+                  placeholder="I'm a software engineer with 5 years of experience, working with React and Node.js..."
                 />
               </div>
               <motion.button
@@ -510,14 +569,14 @@ export default function CVGenerator() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    İşleniyor...
+                    Processing...
                   </span>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    AI ile Otomatik Doldur
+                    Auto-fill with AI
                   </>
                 )}
               </motion.button>
@@ -527,12 +586,12 @@ export default function CVGenerator() {
             <div className="space-y-6">
               {/* Personal Details */}
               <div className="space-y-4">
-                <h3 className="text-xl font-medium text-white">Kişisel Bilgiler</h3>
+                <h3 className="text-xl font-medium text-white">Personal Information</h3>
 
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
-                      Ad Soyad
+                      Full Name
                     </label>
                     <input
                       type="text"
@@ -546,7 +605,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
-                      Ünvan
+                      Title
                     </label>
                     <input
                       type="text"
@@ -560,7 +619,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="location" className="block text-sm font-medium text-gray-300 mb-1">
-                      Konum
+                      Location
                     </label>
                     <input
                       type="text"
@@ -569,7 +628,7 @@ export default function CVGenerator() {
                       value={formData.location}
                       onChange={handleInputChange}
                       className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      placeholder="İstanbul, Türkiye"
+                      placeholder="Istanbul, Turkey"
                     />
                   </div>
 
@@ -584,13 +643,13 @@ export default function CVGenerator() {
                       value={formData.email}
                       onChange={handleInputChange}
                       className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      placeholder="ornek@email.com"
+                      placeholder="john@email.com"
                     />
                   </div>
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
-                      Telefon
+                      Phone
                     </label>
                     <input
                       type="text"
@@ -608,7 +667,7 @@ export default function CVGenerator() {
               {/* Experience Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">İş Deneyimi</h3>
+                  <h3 className="text-xl font-medium text-white">Work Experience</h3>
                   <button
                     onClick={() => addItem('experience', { position: '', company: '', period: '', details: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -616,7 +675,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Deneyim Ekle
+                    Add Experience
                   </button>
                 </div>
 
@@ -629,7 +688,7 @@ export default function CVGenerator() {
                           onClick={() => removeItem('experience', index)}
                           className="text-red-400 hover:text-red-300 text-sm"
                         >
-                          Kaldır
+                          Remove
                         </button>
                       )}
                     </div>
@@ -637,7 +696,7 @@ export default function CVGenerator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Pozisyon
+                          Position
                         </label>
                         <input
                           type="text"
@@ -649,7 +708,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Şirket
+                          Company
                         </label>
                         <input
                           type="text"
@@ -661,28 +720,28 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Dönem
+                          Period
                         </label>
                         <input
                           type="text"
                           value={exp.period}
                           onChange={(e) => handleInputChange(e, 'experience', index, 'period')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Eki 2019 - Günümüz"
+                          placeholder="Oct 2019 - Present"
                         />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
-                        Detaylar
+                        Details
                       </label>
                       <textarea
                         rows={3}
                         value={exp.details}
                         onChange={(e) => handleInputChange(e, 'experience', index, 'details')}
                         className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                        placeholder="Bu pozisyondaki görev ve başarılarınız..."
+                        placeholder="Your responsibilities and achievements in this position..."
                       />
                     </div>
                   </div>
@@ -692,7 +751,7 @@ export default function CVGenerator() {
               {/* Education Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Eğitim</h3>
+                  <h3 className="text-xl font-medium text-white">Education</h3>
                   <button
                     onClick={() => addItem('education', { degree: '', school: '', period: '', gpa: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -700,7 +759,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Eğitim Ekle
+                    Add Education
                   </button>
                 </div>
 
@@ -721,7 +780,7 @@ export default function CVGenerator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Derece
+                          Degree
                         </label>
                         <input
                           type="text"
@@ -733,7 +792,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Okul
+                          School
                         </label>
                         <input
                           type="text"
@@ -758,7 +817,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Not Ortalaması
+                          GPA
                         </label>
                         <input
                           type="text"
@@ -776,7 +835,7 @@ export default function CVGenerator() {
               {/* Skills Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Beceriler</h3>
+                  <h3 className="text-xl font-medium text-white">Skills</h3>
                   <button
                     onClick={() => addItem('skills', { category: '', level: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -784,7 +843,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Beceri Ekle
+                    Add Skill
                   </button>
                 </div>
 
@@ -799,7 +858,7 @@ export default function CVGenerator() {
                               onClick={() => removeItem('skills', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Kaldır
+                              Remove
                             </button>
                           )}
                         </div>
@@ -809,7 +868,7 @@ export default function CVGenerator() {
                           value={skill.category}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'category')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Beceri adı"
+                          placeholder="Skill name"
                         />
 
                         <input
@@ -817,7 +876,7 @@ export default function CVGenerator() {
                           value={skill.level}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'level')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Deneyimli, Başlangıç, vb."
+                          placeholder="Experienced, Beginner, etc."
                         />
                       </div>
                     </div>
@@ -828,7 +887,7 @@ export default function CVGenerator() {
               {/* Languages Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Diller</h3>
+                  <h3 className="text-xl font-medium text-white">Languages</h3>
                   <button
                     onClick={() => addItem('languages', { name: '', level: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -836,7 +895,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Dil Ekle
+                    Add Language
                   </button>
                 </div>
 
@@ -851,7 +910,7 @@ export default function CVGenerator() {
                               onClick={() => removeItem('languages', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Kaldır
+                              Remove
                             </button>
                           )}
                         </div>
@@ -861,7 +920,7 @@ export default function CVGenerator() {
                           value={language.name}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'name')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="İngilizce, Türkçe, vb."
+                          placeholder="English, Turkish, etc."
                         />
 
                         <input
@@ -869,7 +928,7 @@ export default function CVGenerator() {
                           value={language.level}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'level')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Akıcı, Orta, Başlangıç"
+                          placeholder="Fluent, Intermediate, Beginner"
                         />
                       </div>
                     </div>
@@ -880,7 +939,7 @@ export default function CVGenerator() {
               {/* Links Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Bağlantılar</h3>
+                  <h3 className="text-xl font-medium text-white">Links</h3>
                   <button
                     onClick={() => addItem('links', { name: '', url: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -888,7 +947,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Bağlantı Ekle
+                    Add Link
                   </button>
                 </div>
 
@@ -903,7 +962,7 @@ export default function CVGenerator() {
                               onClick={() => removeItem('links', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Kaldır
+                              Remove
                             </button>
                           )}
                         </div>
@@ -930,7 +989,7 @@ export default function CVGenerator() {
               </div>
 
               {/* Projeler Bölümü - Portfolio şablonu seçildiğinde görünür */}
-              {(selectedTemplate === 'portfolio' || selectedTemplate === 'portfolio-text' || selectedTemplate === 'minimal-noexp' || selectedTemplate === 'minimal-text') && (
+              {(selectedTemplate === 'portfolio' || selectedTemplate === 'portfolio-text' || selectedTemplate === 'minimal-noexp' || selectedTemplate === 'minimal') && (
                 <div className="space-y-4 mt-6 pt-6 border-t border-gray-700">
                   <div className="flex justify-between items-center">
                     <h3 className="text-xl font-medium text-white">Projelerim</h3>
@@ -1076,6 +1135,28 @@ export default function CVGenerator() {
                     </button>
                   </div>
 
+                  {/* Language Toggle */}
+                  <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1 border border-white/10">
+                    <button
+                      onClick={() => setLanguage('tr')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${language === 'tr'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                        : 'text-gray-300 hover:bg-white/10'
+                        }`}
+                    >
+                      🇹🇷 TR
+                    </button>
+                    <button
+                      onClick={() => setLanguage('en')}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${language === 'en'
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                        : 'text-gray-300 hover:bg-white/10'
+                        }`}
+                    >
+                      🇬🇧 EN
+                    </button>
+                  </div>
+
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -1100,10 +1181,10 @@ export default function CVGenerator() {
                     {/* Header */}
                     <div style={{ marginBottom: '24px', borderBottom: '2px solid #e5e7eb', paddingBottom: '20px' }}>
                       <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#111827', marginBottom: '4px', margin: 0 }}>
-                        {formData.fullName || 'Ad Soyad'}
+                        {formData.fullName || labels[language].fullName}
                       </h1>
                       <p style={{ fontSize: '18px', color: '#4b5563', marginBottom: '12px', margin: '8px 0' }}>
-                        {formData.title || 'Pozisyon'}
+                        {formData.title || labels[language].position}
                       </p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '14px', color: '#6b7280' }}>
                         {formData.location && <span>📍 {formData.location}</span>}
@@ -1118,17 +1199,17 @@ export default function CVGenerator() {
                     {/* Experience */}
                     <div style={{ marginBottom: '24px' }}>
                       <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
-                        İŞ DENEYİMİ
+                        {labels[language].experience}
                       </h2>
                       {formData.experience.map((exp, index) => (
                         <div key={index} style={{ marginBottom: '16px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{exp.position || 'Pozisyon'}</span>
-                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{exp.period || 'Dönem'}</span>
+                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{exp.position || labels[language].position}</span>
+                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{exp.period || labels[language].period}</span>
                           </div>
-                          <div style={{ fontSize: '15px', color: '#374151', marginBottom: '4px' }}>{exp.company || 'Şirket'}</div>
+                          <div style={{ fontSize: '15px', color: '#374151', marginBottom: '4px' }}>{exp.company || labels[language].company}</div>
                           <div style={{ fontSize: '14px', color: '#4b5563', whiteSpace: 'pre-line', lineHeight: '1.5' }}>
-                            {exp.details || 'Detaylar...'}
+                            {exp.details || labels[language].details}
                           </div>
                         </div>
                       ))}
@@ -1137,16 +1218,16 @@ export default function CVGenerator() {
                     {/* Education */}
                     <div style={{ marginBottom: '24px' }}>
                       <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
-                        EĞİTİM
+                        {labels[language].education}
                       </h2>
                       {formData.education.map((edu, index) => (
                         <div key={index} style={{ marginBottom: '12px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{edu.degree || 'Derece'}</span>
-                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{edu.period || 'Dönem'}</span>
+                            <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{edu.degree || labels[language].degree}</span>
+                            <span style={{ fontSize: '14px', color: '#6b7280' }}>{edu.period || labels[language].period}</span>
                           </div>
-                          <div style={{ fontSize: '15px', color: '#374151' }}>{edu.school || 'Okul'}</div>
-                          {edu.gpa && <div style={{ fontSize: '14px', color: '#6b7280' }}>Not Ortalaması: {edu.gpa}</div>}
+                          <div style={{ fontSize: '15px', color: '#374151' }}>{edu.school || labels[language].school}</div>
+                          {edu.gpa && <div style={{ fontSize: '14px', color: '#6b7280' }}>{labels[language].gpa}: {edu.gpa}</div>}
                         </div>
                       ))}
                     </div>
@@ -1155,23 +1236,23 @@ export default function CVGenerator() {
                     <div style={{ display: 'flex', gap: '32px' }}>
                       <div style={{ flex: 1 }}>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
-                          BECERİLER
+                          {labels[language].skills}
                         </h2>
                         {formData.skills.map((skill, index) => (
                           <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
-                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{skill.category || 'Beceri'}</span>
-                            <span style={{ color: '#6b7280' }}> - {skill.level || 'Seviye'}</span>
+                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{skill.category || labels[language].skill}</span>
+                            <span style={{ color: '#6b7280' }}> - {skill.level || labels[language].level}</span>
                           </div>
                         ))}
                       </div>
                       <div style={{ flex: 1 }}>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827', borderBottom: '1px solid #d1d5db', paddingBottom: '8px', marginBottom: '16px' }}>
-                          DİLLER
+                          {labels[language].languages}
                         </h2>
-                        {formData.languages.map((language, index) => (
+                        {formData.languages.map((lang, index) => (
                           <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
-                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{language.name || 'Dil'}</span>
-                            <span style={{ color: '#6b7280' }}> - {language.level || 'Seviye'}</span>
+                            <span style={{ fontWeight: '500', color: '#1f2937' }}>{lang.name || labels[language].language}</span>
+                            <span style={{ color: '#6b7280' }}> - {lang.level || labels[language].level}</span>
                           </div>
                         ))}
                       </div>
@@ -1184,10 +1265,10 @@ export default function CVGenerator() {
                     {/* Header with gradient */}
                     <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: '#ffffff', padding: '32px' }}>
                       <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', margin: 0 }}>
-                        {formData.fullName || 'Ad Soyad'}
+                        {formData.fullName || labels[language].fullName}
                       </h1>
                       <p style={{ fontSize: '20px', marginBottom: '16px', margin: '8px 0 16px 0', opacity: 0.9 }}>
-                        {formData.title || 'Pozisyon'}
+                        {formData.title || labels[language].position}
                       </p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', fontSize: '14px' }}>
                         {formData.location && <span>📍 {formData.location}</span>}
@@ -1203,7 +1284,7 @@ export default function CVGenerator() {
                         {/* Experience */}
                         <div style={{ marginBottom: '24px' }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                            İş Deneyimi
+                            {labels[language].experience}
                           </h2>
                           {formData.experience.map((exp, index) => (
                             <div key={index} style={{ marginBottom: '20px' }}>
@@ -1220,7 +1301,7 @@ export default function CVGenerator() {
                         {/* Education */}
                         <div style={{ marginBottom: '24px' }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                            Eğitim
+                            {labels[language].education}
                           </h2>
                           {formData.education.map((edu, index) => (
                             <div key={index} style={{ marginBottom: '16px' }}>
@@ -1240,7 +1321,7 @@ export default function CVGenerator() {
                         {/* Skills */}
                         <div style={{ marginBottom: '24px' }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                            Beceriler
+                            {labels[language].skills}
                           </h2>
                           {formData.skills.map((skill, index) => (
                             <div key={index} style={{ marginBottom: '12px' }}>
@@ -1260,7 +1341,7 @@ export default function CVGenerator() {
                         {/* Languages */}
                         <div style={{ marginBottom: '24px' }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                            Diller
+                            {labels[language].languages}
                           </h2>
                           {formData.languages.map((language, index) => (
                             <div key={index} style={{ marginBottom: '12px' }}>
@@ -1298,7 +1379,7 @@ export default function CVGenerator() {
                   <div className="p-8 font-serif">
                     <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
                       <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || 'Pozisyon'}</p>
+                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || labels[language].position}</p>
 
                       <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                         {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Adres: {formData.location}</div>}
@@ -1318,7 +1399,7 @@ export default function CVGenerator() {
                     {/* İş Deneyimi Bölümü */}
                     {formData.experience.length > 0 && (
                       <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>İŞ DENEYİMİ</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].experience}</h2>
 
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
@@ -1336,7 +1417,7 @@ export default function CVGenerator() {
                     {/* Eğitim Bölümü */}
                     {formData.education.length > 0 && (
                       <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].education}</h2>
 
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
@@ -1356,7 +1437,7 @@ export default function CVGenerator() {
                       {/* Beceriler */}
                       {formData.skills.length > 0 && (
                         <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>BECERİLER</h2>
+                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].skills}</h2>
 
                           {formData.skills.map((skill, index) => (
                             <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -1370,7 +1451,7 @@ export default function CVGenerator() {
                       {/* Diller */}
                       {formData.languages.length > 0 && (
                         <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>DİLLER</h2>
+                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].languages}</h2>
 
                           {formData.languages.map((language, index) => (
                             <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -1407,7 +1488,7 @@ export default function CVGenerator() {
                       {/* Contact */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          İletişim
+                          {labels[language].contact}
                         </h2>
                         {formData.email && <div style={{ fontSize: '12px', marginBottom: '8px' }}>✉️ {formData.email}</div>}
                         {formData.phone && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📞 {formData.phone}</div>}
@@ -1417,7 +1498,7 @@ export default function CVGenerator() {
                       {/* Skills */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          Beceriler
+                          {labels[language].skills}
                         </h2>
                         {formData.skills.map((skill, index) => (
                           <div key={index} style={{ marginBottom: '10px' }}>
@@ -1437,7 +1518,7 @@ export default function CVGenerator() {
                       {/* Languages */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          Diller
+                          {labels[language].languages}
                         </h2>
                         {formData.languages.map((language, index) => (
                           <div key={index} style={{ fontSize: '12px', marginBottom: '6px' }}>
@@ -1451,7 +1532,7 @@ export default function CVGenerator() {
                       {formData.links.length > 0 && (
                         <div>
                           <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                            Bağlantılar
+                            {labels[language].links}
                           </h2>
                           {formData.links.map((link, index) => (
                             <div key={index} style={{ fontSize: '11px', marginBottom: '6px', wordBreak: 'break-all' }}>
@@ -1467,7 +1548,7 @@ export default function CVGenerator() {
                       {/* Experience */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          İŞ DENEYİMİ
+                          {labels[language].experience}
                         </h2>
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '16px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
@@ -1482,7 +1563,7 @@ export default function CVGenerator() {
                       {/* Education */}
                       <div>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          EĞİTİM
+                          {labels[language].education}
                         </h2>
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '12px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
@@ -1503,11 +1584,11 @@ export default function CVGenerator() {
                     {/* Elegant Header */}
                     <div style={{ backgroundColor: '#1a1a2e', color: '#ffffff', padding: '40px 32px', textAlign: 'center' }}>
                       <h1 style={{ fontSize: '36px', fontWeight: 'normal', letterSpacing: '4px', margin: 0, marginBottom: '8px', textTransform: 'uppercase' }}>
-                        {formData.fullName || 'Ad Soyad'}
+                        {formData.fullName || labels[language].fullName}
                       </h1>
                       <div style={{ width: '60px', height: '2px', backgroundColor: '#c9a227', margin: '16px auto' }}></div>
                       <p style={{ fontSize: '18px', letterSpacing: '2px', margin: 0, color: '#c9a227', textTransform: 'uppercase' }}>
-                        {formData.title || 'Pozisyon'}
+                        {formData.title || labels[language].position}
                       </p>
                     </div>
 
@@ -1523,7 +1604,7 @@ export default function CVGenerator() {
                       {/* Experience */}
                       <div style={{ marginBottom: '32px' }}>
                         <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                          Profesyonel Deneyim
+                          {labels[language].experience}
                         </h2>
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '20px' }}>
@@ -1542,7 +1623,7 @@ export default function CVGenerator() {
                         {/* Education */}
                         <div style={{ flex: 1 }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            Eğitim
+                            {labels[language].education}
                           </h2>
                           {formData.education.map((edu, index) => (
                             <div key={index} style={{ marginBottom: '12px' }}>
@@ -1556,7 +1637,7 @@ export default function CVGenerator() {
                         {/* Skills & Languages */}
                         <div style={{ flex: 1 }}>
                           <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            Uzmanlık Alanları
+                            {labels[language].skills}
                           </h2>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
                             {formData.skills.map((skill, index) => (
@@ -1567,7 +1648,7 @@ export default function CVGenerator() {
                           </div>
 
                           <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            Diller
+                            {labels[language].languages}
                           </h2>
                           {formData.languages.map((language, index) => (
                             <div key={index} style={{ fontSize: '13px', marginBottom: '6px', color: '#4a4a4a' }}>
@@ -1580,16 +1661,16 @@ export default function CVGenerator() {
                   </div>
                 )}
 
-                {selectedTemplate === 'minimal-text' && (
+                {selectedTemplate === 'minimal' && (
                   <div className="p-8 font-serif">
                     <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
-                      <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || 'Pozisyon'}</p>
+                      <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || labels[language].fullName}</h1>
+                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || labels[language].position}</p>
 
                       <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                        {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Adres: {formData.location}</div>}
-                        {formData.email && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>E-posta: {formData.email}</div>}
-                        {formData.phone && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Telefon: {formData.phone}</div>}
+                        {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{labels[language].address}: {formData.location}</div>}
+                        {formData.email && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{labels[language].emailLabel}: {formData.email}</div>}
+                        {formData.phone && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{labels[language].phoneLabel}: {formData.phone}</div>}
 
                         {formData.links.map((link, index) => (
                           <div key={index} style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>
@@ -1608,12 +1689,12 @@ export default function CVGenerator() {
                         {/* Beceriler */}
                         {formData.skills.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>BECERİLER</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].skills}</h2>
 
                             {formData.skills.map((skill, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span>{skill.category || 'Beceri'}</span>
-                                <span>{skill.level || 'Seviye'}</span>
+                                <span>{skill.category || labels[language].skill}</span>
+                                <span>{skill.level || labels[language].level}</span>
                               </div>
                             ))}
                           </div>
@@ -1622,12 +1703,12 @@ export default function CVGenerator() {
                         {/* Diller */}
                         {formData.languages.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>DİLLER</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].languages}</h2>
 
                             {formData.languages.map((language, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span>{language.name || 'Dil'}</span>
-                                <span>{language.level || 'Seviye'}</span>
+                                <span>{language.name || labels[language].language}</span>
+                                <span>{language.level || labels[language].level}</span>
                               </div>
                             ))}
                           </div>
@@ -1636,16 +1717,16 @@ export default function CVGenerator() {
                         {/* Projeler */}
                         {formData.projects.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>PROJELER</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].projects}</h2>
 
                             {formData.projects.map((project, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
-                                <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{project.name || 'Proje Adı'}</div>
-                                <p style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{project.description || 'Proje açıklaması'}</p>
+                                <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{project.name || labels[language].projectName}</div>
+                                <p style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{project.description || labels[language].projectDesc}</p>
 
                                 {project.tags && (
                                   <div style={{ fontSize: '9pt' }}>
-                                    <span style={{ fontStyle: 'italic' }}>Teknolojiler: </span>
+                                    <span style={{ fontStyle: 'italic' }}>{labels[language].technologies}: </span>
                                     {project.tags}
                                   </div>
                                 )}
@@ -1660,7 +1741,7 @@ export default function CVGenerator() {
                         {/* İş Deneyimi */}
                         {formData.experience.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>İŞ DENEYİMİ</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].experience}</h2>
 
                             {formData.experience.map((exp, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
@@ -1678,7 +1759,7 @@ export default function CVGenerator() {
                         {/* Eğitim */}
                         {formData.education.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].education}</h2>
 
                             {formData.education.map((edu, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>

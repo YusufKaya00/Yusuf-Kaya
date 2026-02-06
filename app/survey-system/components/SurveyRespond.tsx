@@ -23,11 +23,11 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
     if (mode === 'oneByOne') {
       setProgress(((currentQuestionIndex + 1) / survey.questions.length) * 100);
     } else {
-      const answeredRequired = survey.questions.filter(q => q.required).every(q => 
+      const answeredRequired = survey.questions.filter(q => q.required).every(q =>
         answers.some(a => a.questionId === q.id && isAnswerValid(a.value))
       );
 
-      const answeredCount = survey.questions.filter(q => 
+      const answeredCount = survey.questions.filter(q =>
         answers.some(a => a.questionId === q.id && isAnswerValid(a.value))
       ).length;
 
@@ -49,14 +49,14 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
   // Cevabı kaydet
   const handleAnswer = (questionId: string, value: string | number | string[]) => {
     const questionIndex = survey.questions.findIndex(q => q.id === questionId);
-    
+
     // Önceki cevabı sil
     const updatedAnswers = answers.filter(a => a.questionId !== questionId);
-    
+
     // Yeni cevabı ekle
     updatedAnswers.push({ questionId, value });
     setAnswers(updatedAnswers);
-    
+
     // Hatayı temizle
     if (errors[questionId]) {
       const newErrors = { ...errors };
@@ -65,9 +65,9 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
     }
 
     // Tek tek modunda ise ve geçerli bir cevap ise, bir sonraki soruya geç
-    if (mode === 'oneByOne' && 
-        isAnswerValid(value) && 
-        currentQuestionIndex < survey.questions.length - 1) {
+    if (mode === 'oneByOne' &&
+      isAnswerValid(value) &&
+      currentQuestionIndex < survey.questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       }, 300);
@@ -78,20 +78,20 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
   const handleSubmit = () => {
     // Formun doğruluğunu kontrol et
     const newErrors: Record<string, string> = {};
-    
+
     survey.questions.forEach(question => {
       if (question.required) {
         const answer = answers.find(a => a.questionId === question.id);
-        
+
         if (!answer || !isAnswerValid(answer.value)) {
-          newErrors[question.id] = 'Bu soru zorunludur';
+          newErrors[question.id] = 'This question is required';
         }
       }
     });
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      
+
       // Tek tek modunda, ilk hataya atla
       if (mode === 'oneByOne') {
         const firstErrorIndex = survey.questions.findIndex(q => newErrors[q.id]);
@@ -99,13 +99,13 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
           setCurrentQuestionIndex(firstErrorIndex);
         }
       }
-      
+
       return;
     }
-    
+
     // Gönderimi başlat
     setIsSubmitting(true);
-    
+
     // Gönderim işlemi (gerçek uygulamada bir API çağrısı olabilir)
     setTimeout(() => {
       onSubmit(answers);
@@ -159,14 +159,14 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
               </svg>
-              Tüm Soruları Göster
+              Show All Questions
             </>
           ) : (
             <>
               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
-              Tek Tek Göster
+              Show One by One
             </>
           )}
         </button>
@@ -186,26 +186,25 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
               className="space-y-6"
             >
               <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                Soru {currentQuestionIndex + 1} / {survey.questions.length}
+                Question {currentQuestionIndex + 1} / {survey.questions.length}
               </div>
               {renderQuestion(survey.questions[currentQuestionIndex])}
-              
+
               {/* Navigasyon butonları */}
               <div className="flex justify-between mt-8">
                 <button
                   type="button"
                   onClick={goToPreviousQuestion}
                   disabled={currentQuestionIndex === 0}
-                  className={`px-4 py-2 flex items-center text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                    currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
+                  className={`px-4 py-2 flex items-center text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                 >
                   <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  Önceki
+                  Previous
                 </button>
-                
+
                 {currentQuestionIndex === survey.questions.length - 1 ? (
                   <button
                     type="submit"
@@ -222,7 +221,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
-                    Anketi Gönder
+                    Submit Survey
                   </button>
                 ) : (
                   <button
@@ -230,7 +229,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
                     onClick={goToNextQuestion}
                     className="px-4 py-2 text-indigo-600 dark:text-indigo-400 border border-indigo-600 dark:border-indigo-400 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center"
                   >
-                    Sonraki
+                    Next
                     <svg className="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -246,7 +245,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
                   {renderQuestion(question)}
                 </div>
               ))}
-              
+
               <div className="flex justify-end mt-8">
                 <button
                   type="submit"
@@ -263,7 +262,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   )}
-                  Anketi Gönder
+                  Submit Survey
                 </button>
               </div>
             </div>
@@ -281,7 +280,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
           </svg>
-          Anketlerden Çık
+          Exit Surveys
         </button>
       </div>
     </div>
@@ -291,7 +290,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
   function renderQuestion(question: Question) {
     const answer = answers.find(a => a.questionId === question.id);
     const errorMessage = errors[question.id];
-    
+
     return (
       <div className="space-y-3">
         <div className="flex items-start">
@@ -302,7 +301,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
             </label>
           </div>
         </div>
-        
+
         <div className="mt-2">
           {question.type === QuestionType.MultipleChoice && (
             <div className="space-y-2">
@@ -327,20 +326,19 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
               ))}
             </div>
           )}
-          
+
           {question.type === QuestionType.ShortAnswer && (
             <textarea
               id={`question_${question.id}`}
               rows={3}
               value={answer?.value as string || ''}
               onChange={(e) => handleAnswer(question.id, e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                errorMessage ? 'border-red-500' : 'border-gray-300 dark:border-gray-500'
-              }`}
-              placeholder="Cevabınızı buraya yazın..."
+              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${errorMessage ? 'border-red-500' : 'border-gray-300 dark:border-gray-500'
+                }`}
+              placeholder="Type your answer here..."
             />
           )}
-          
+
           {question.type === QuestionType.Rating && (
             <div className="flex flex-wrap gap-2">
               {question.options?.map((option, index) => (
@@ -348,11 +346,10 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
                   key={index}
                   type="button"
                   onClick={() => handleAnswer(question.id, option)}
-                  className={`w-10 h-10 rounded-md text-sm font-medium ${
-                    answer?.value === option
+                  className={`w-10 h-10 rounded-md text-sm font-medium ${answer?.value === option
                       ? 'bg-indigo-600 text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {option}
                 </button>
@@ -360,7 +357,7 @@ export default function SurveyRespond({ survey, onSubmit, onCancel }: SurveyResp
             </div>
           )}
         </div>
-        
+
         {errorMessage && (
           <p className="mt-1 text-sm text-red-500">{errorMessage}</p>
         )}

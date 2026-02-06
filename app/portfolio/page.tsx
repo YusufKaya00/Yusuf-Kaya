@@ -12,7 +12,7 @@ export default function Portfolio() {
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         {/* Floating gradient orbs */}
         <motion.div
-          animate={{ 
+          animate={{
             x: [0, 100, 0],
             y: [0, -100, 0],
             scale: [1, 1.2, 1],
@@ -21,7 +21,7 @@ export default function Portfolio() {
           className="absolute top-20 left-20 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl"
         />
         <motion.div
-          animate={{ 
+          animate={{
             x: [0, -100, 0],
             y: [0, 100, 0],
             scale: [1, 1.3, 1],
@@ -49,10 +49,10 @@ export default function Portfolio() {
               <span className="text-purple-400 text-sm font-medium">Web Applications</span>
             </motion.div>
             <h1 className="text-5xl md:text-6xl font-black gradient-text mb-4">
-              Projelerim
+              My Projects
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Geliştirdiğim web uygulamaları ve araçlar
+              Web applications and tools I've developed
             </p>
           </motion.div>
 
@@ -73,9 +73,9 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Proje Takip ve Gantt</h3>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Project Tracking & Gantt</h3>
                 <p className="text-gray-300 mb-4 text-sm">
-                  Proje ve görev yönetimi için kullanıcı dostu arayüz, ekip atama ve Gantt görselleştirme.
+                  User-friendly interface for project and task management, team assignment and Gantt visualization.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -88,11 +88,11 @@ export default function Portfolio() {
                     Framer Motion
                   </span>
                 </div>
-                <Link 
-                  href="/project-tracker" 
+                <Link
+                  href="/project-tracker"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Uygulamayı Kullan</span>
+                  <span className="text-sm">Use Application</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -116,9 +116,9 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">CV Oluşturucu</h3>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">CV Generator</h3>
                 <p className="text-gray-300 mb-4">
-                  Metin tabanlı CV oluşturma aracı, Gemini AI entegrasyonu ile otomatik CV oluşturabilir.
+                  Text-based CV creation tool, can auto-generate CVs with Gemini AI integration.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -131,11 +131,11 @@ export default function Portfolio() {
                     Gemini AI
                   </span>
                 </div>
-                <Link 
-                  href="/cv-generator" 
+                <Link
+                  href="/cv-generator"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Uygulamayı Kullan</span>
+                  <span className="text-sm">Use Application</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -161,7 +161,7 @@ export default function Portfolio() {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">PDF to Word Converter</h3>
                 <p className="text-gray-300 mb-4">
-                  Bulut tabanlı PDF dosyalarını kolayca Word formatına dönüştüren modern bir web uygulaması.
+                  Modern web application that easily converts PDF files to Word format with cloud technology.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -174,11 +174,11 @@ export default function Portfolio() {
                     Cloud API
                   </span>
                 </div>
-                <Link 
-                  href="/converter" 
+                <Link
+                  href="/converter"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Dönüştürücüyü Kullan</span>
+                  <span className="text-sm">Use Converter</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -204,7 +204,7 @@ export default function Portfolio() {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Fırat Convert</h3>
                 <p className="text-gray-300 mb-4">
-                  Excel/CSV dosyalarından otomatik raporlama ve veri görselleştirme sistemi.
+                  Automatic reporting and data visualization system from Excel/CSV files.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -217,11 +217,11 @@ export default function Portfolio() {
                     jsPDF
                   </span>
                 </div>
-                <Link 
-                  href="/convert" 
+                <Link
+                  href="/convert"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Veri Dönüştürücüyü Kullan</span>
+                  <span className="text-sm">Use Data Converter</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -245,9 +245,9 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Kod Analiz Aracı</h3>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Code Analysis Tool</h3>
                 <p className="text-gray-300 mb-4">
-                  Yapay zeka destekli kod analizi, güvenlik açığı tespiti ve iyileştirme önerileri sunan araç.
+                  AI-powered code analysis, security vulnerability detection and improvement suggestions tool.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -260,11 +260,11 @@ export default function Portfolio() {
                     Syntax Highlight
                   </span>
                 </div>
-                <Link 
-                  href="/code-review" 
+                <Link
+                  href="/code-review"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Kodu Analiz Et</span>
+                  <span className="text-sm">Analyze Code</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -288,9 +288,9 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Fotoğraf Paylaşım Uygulaması</h3>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Photo Sharing App</h3>
                 <p className="text-gray-300 mb-4">
-                  Kullanıcıların fotoğraf yükleyip etiketleyebileceği, yorum yapıp beğenebileceği sosyal medya tarzı uygulama. 
+                  Social media style app where users can upload and tag photos, comment and like.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -303,11 +303,11 @@ export default function Portfolio() {
                     Tailwind CSS
                   </span>
                 </div>
-                <Link 
-                  href="/photo-sharing" 
+                <Link
+                  href="/photo-sharing"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Uygulamayı Kullan</span>
+                  <span className="text-sm">Use Application</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
@@ -331,9 +331,9 @@ export default function Portfolio() {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Anket ve Form Sistemi</h3>
+                <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Survey & Form System</h3>
                 <p className="text-gray-300 mb-4">
-                  Anket oluşturma, katılım sağlama ve sonuçları grafiklerle görselleştirme imkanı sunan interaktif uygulama.
+                  Interactive application for creating surveys, collecting responses and visualizing results with charts.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -346,11 +346,11 @@ export default function Portfolio() {
                     Tailwind CSS
                   </span>
                 </div>
-                <Link 
-                  href="/survey-system" 
+                <Link
+                  href="/survey-system"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
                 >
-                  <span className="text-sm">Uygulamayı Kullan</span>
+                  <span className="text-sm">Use Application</span>
                   <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
