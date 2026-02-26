@@ -494,7 +494,7 @@ export default function AdminPage() {
               <p className="text-gray-400 text-center">Add, edit, and manage blog posts. Use AI-powered content creation feature.</p>
               <div className="mt-6 flex justify-center">
                 <span className="inline-flex items-center px-4 py-1 rounded-full text-sm font-medium bg-indigo-900/50 text-indigo-400">
-                  Gemini AI Powered
+                  AI Powered
                 </span>
               </div>
             </motion.div>

@@ -49,11 +49,11 @@ export default function AdminBlogPage() {
     try {
       setError(null);
       const response = await fetch('/api/blog/posts');
-      
+
       if (!response.ok) {
         throw new Error('Blog yazıları yüklenemedi');
       }
-      
+
       const data = await response.json();
       setPosts(data);
     } catch (error: any) {
@@ -82,7 +82,7 @@ export default function AdminBlogPage() {
       if (!response.ok) {
         throw new Error(data.error || 'İçerik üretme hatası');
       }
-      
+
       if (data.content) {
         setContent(data.content);
       } else {
@@ -102,7 +102,7 @@ export default function AdminBlogPage() {
     setSaving(true);
     setError(null);
     console.log('Blog kaydediliyor:', { title, content: content.substring(0, 30) + '...' });
-    
+
     try {
       const response = await fetch('/api/blog/posts', {
         method: 'POST',
@@ -117,10 +117,10 @@ export default function AdminBlogPage() {
       });
 
       console.log('API yanıt durumu:', response.status);
-      
+
       // Yanıtı JSON olarak parse et
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Kaydetme hatası');
       }
@@ -132,7 +132,7 @@ export default function AdminBlogPage() {
       setTitle('');
       setContent('');
       setPrompt('');
-      
+
       // Başarı mesajı göster
       alert('Blog yazısı başarıyla kaydedildi!');
     } catch (error: any) {
@@ -151,12 +151,12 @@ export default function AdminBlogPage() {
       const response = await fetch(`/api/blog/posts/${postId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || 'Silme hatası');
       }
-      
+
       // Başarıyla silindi, blog listesini yenile
       fetchPosts();
     } catch (error: any) {
@@ -183,9 +183,9 @@ export default function AdminBlogPage() {
         <Suspense fallback={null}>
           <BlogSearchParams />
         </Suspense>
-        
+
         <div className="flex justify-between items-center mb-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -211,7 +211,7 @@ export default function AdminBlogPage() {
             className="bg-gray-800/50 rounded-2xl shadow-2xl p-8 border border-gray-700 backdrop-blur-sm order-2 lg:order-1"
           >
             <h2 className="text-2xl font-bold text-white mb-6">Blog Yazıları</h2>
-            
+
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
@@ -270,7 +270,7 @@ export default function AdminBlogPage() {
             <h2 className="text-2xl font-bold text-white mb-6">Yeni Blog Yazısı</h2>
             <p className="text-gray-400 mb-2">AI destekli içerik üretin veya kendiniz yazın</p>
             <p className="mb-6 text-green-400 text-sm bg-green-900/30 p-2 rounded border border-green-800">
-              Gemini AI aktif! İçerik oluşturmak için konu veya anahtar kelimeler yazın
+              Yapay Zeka aktif! İçerik oluşturmak için konu veya anahtar kelimeler yazın
             </p>
 
             <div className="space-y-6">
@@ -289,7 +289,7 @@ export default function AdminBlogPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Gemini AI Prompt
+                  Yapay Zeka Promptu
                 </label>
                 <div className="flex space-x-2">
                   <input
@@ -302,11 +302,10 @@ export default function AdminBlogPage() {
                   <button
                     onClick={generateContent}
                     disabled={!prompt || generating}
-                    className={`px-6 py-2 rounded-lg text-white font-medium ${
-                      !prompt || generating
+                    className={`px-6 py-2 rounded-lg text-white font-medium ${!prompt || generating
                         ? 'bg-gray-600 cursor-not-allowed'
                         : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                    } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2 whitespace-nowrap`}
+                      } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2 whitespace-nowrap`}
                   >
                     {generating ? (
                       <>
@@ -371,11 +370,10 @@ export default function AdminBlogPage() {
                 <button
                   onClick={savePost}
                   disabled={!title || !content || saving}
-                  className={`px-6 py-3 rounded-lg text-white font-medium ${
-                    !title || !content || saving
+                  className={`px-6 py-3 rounded-lg text-white font-medium ${!title || !content || saving
                       ? 'bg-gray-600 cursor-not-allowed'
                       : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                  } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2`}
+                    } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2`}
                 >
                   {saving ? (
                     <>

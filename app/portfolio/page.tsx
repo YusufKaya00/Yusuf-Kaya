@@ -118,7 +118,7 @@ export default function Portfolio() {
               <div className="p-6">
                 <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">CV Generator</h3>
                 <p className="text-gray-300 mb-4">
-                  Text-based CV creation tool, can auto-generate CVs with Gemini AI integration.
+                  Text-based CV creation tool, can auto-generate CVs with AI integration.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">
@@ -128,7 +128,7 @@ export default function Portfolio() {
                     Next.js
                   </span>
                   <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">
-                    Gemini AI
+                    AI Integration
                   </span>
                 </div>
                 <Link

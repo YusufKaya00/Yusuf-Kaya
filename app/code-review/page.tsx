@@ -154,7 +154,7 @@ export default function CodeReview() {
     }
   };
 
-  // Yapay zeka analizi simülasyonu (gerçek uygulamada Gemini API kullanılacak)
+  // Yapay zeka analizi simülasyonu (gerçek uygulamada AI API kullanılacak)
   const simulateAIAnalysis = async (code: string, language: string, analysisTypes: string[]) => {
     // Simüle edilmiş tepkiler
     const responses: Record<string, any> = {
@@ -567,8 +567,8 @@ public class OrderCalculator {
             <div className="flex border-b border-gray-700">
               <button
                 className={`px-6 py-4 text-sm font-medium flex-1 md:flex-none md:min-w-[150px] text-center ${tab === 'code'
-                    ? 'bg-indigo-600/30 text-white border-b-2 border-indigo-500'
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-indigo-600/30 text-white border-b-2 border-indigo-500'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                   }`}
                 onClick={() => setTab('code')}
               >
@@ -576,8 +576,8 @@ public class OrderCalculator {
               </button>
               <button
                 className={`px-6 py-4 text-sm font-medium flex-1 md:flex-none md:min-w-[150px] text-center ${tab === 'results'
-                    ? 'bg-indigo-600/30 text-white border-b-2 border-indigo-500'
-                    : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                  ? 'bg-indigo-600/30 text-white border-b-2 border-indigo-500'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                   }`}
                 onClick={() => setTab('results')}
                 disabled={!result && !isAnalyzing}
@@ -713,8 +713,8 @@ public class OrderCalculator {
                         onClick={analyzeCode}
                         disabled={isAnalyzing || !code.trim()}
                         className={`px-6 py-3 rounded-md text-white font-medium flex items-center ${isAnalyzing || !code.trim()
-                            ? 'bg-gray-700 cursor-not-allowed'
-                            : 'bg-indigo-600 hover:bg-indigo-700'
+                          ? 'bg-gray-700 cursor-not-allowed'
+                          : 'bg-indigo-600 hover:bg-indigo-700'
                           }`}
                       >
                         {isAnalyzing ? (

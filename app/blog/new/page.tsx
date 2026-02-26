@@ -50,7 +50,7 @@ function NewBlogPost() {
       if (!response.ok) {
         throw new Error(data.error || 'İçerik üretme hatası');
       }
-      
+
       if (data.content) {
         setContent(data.content);
       } else {
@@ -108,10 +108,10 @@ function NewBlogPost() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Yeni Blog Yazısı</h1>
             <p className="text-gray-400">
-              Gemini AI ile içerik üretebilir veya kendiniz yazabilirsiniz
+              Yapay Zeka (AI) ile içerik üretebilir veya kendiniz yazabilirsiniz
             </p>
             <p className="mt-2 text-green-400 text-sm bg-green-900/30 p-2 rounded border border-green-800">
-              Gemini AI aktif! İçerik oluşturmak için konu veya anahtar kelimeler yazın
+              Yapay Zeka aktif! İçerik oluşturmak için konu veya anahtar kelimeler yazın
             </p>
           </div>
 
@@ -137,7 +137,7 @@ function NewBlogPost() {
 
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
-                Gemini AI Prompt
+                Yapay Zeka Promptu
               </label>
               <div className="flex space-x-2">
                 <input
@@ -150,11 +150,10 @@ function NewBlogPost() {
                 <button
                   onClick={generateContent}
                   disabled={!prompt || generating}
-                  className={`px-6 py-2 rounded-lg text-white font-medium ${
-                    !prompt || generating
+                  className={`px-6 py-2 rounded-lg text-white font-medium ${!prompt || generating
                       ? 'bg-gray-600 cursor-not-allowed'
                       : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                  } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2 whitespace-nowrap`}
+                    } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2 whitespace-nowrap`}
                 >
                   {generating ? (
                     <>
@@ -225,11 +224,10 @@ function NewBlogPost() {
               <button
                 onClick={savePost}
                 disabled={!title || !content || saving}
-                className={`px-6 py-2 rounded-lg text-white font-medium ${
-                  !title || !content || saving
+                className={`px-6 py-2 rounded-lg text-white font-medium ${!title || !content || saving
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'
-                } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2`}
+                  } transition-all duration-300 shadow-lg shadow-indigo-500/25 flex items-center space-x-2`}
               >
                 {saving ? (
                   <>

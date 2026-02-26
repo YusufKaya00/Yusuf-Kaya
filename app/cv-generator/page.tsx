@@ -339,8 +339,8 @@ export default function CVGenerator() {
         document.body.appendChild(tempContainer);
 
         try {
-          // Daha yüksek kalite için ölçek faktörünü artır
-          const scaleFactor = 2.5; // Yüksek kalite için
+          // Daha yüksek kalite için ölçek faktörünü artır (Bellek optimizasyonu için 2.5 -> 2.0 düşürüldü)
+          const scaleFactor = 2.0; // Yüksek kalite için yeterli ve daha güvenli
 
           // Use html2canvas with specific settings to bypass color function issues
           const canvas = await html2canvas(clonedCv, {
