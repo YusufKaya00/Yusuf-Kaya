@@ -6,7 +6,6 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "production-build": "next build --no-lint",
-    "postbuild": "node render-verify.js",
     "start": "node --max-old-space-size=512 node_modules/next/dist/bin/next start",
     "lint": "next lint"
   },
