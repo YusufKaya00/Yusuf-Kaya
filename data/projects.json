@@ -1,80 +1,5 @@
 [
   {
-    "id": "ida-interface",
-    "title": "IDA - Interface",
-    "description": "Ground Control Station Interface",
-    "image": "/projects/ida/ida.jpg",
-    "detailPage": "/projects/ida-interface",
-    "technologies": [
-      "React",
-      "Node.js",
-      "Python",
-      "TensorFlow",
-      "D3.js",
-      "TypeScript",
-      "GraphQL"
-    ],
-    "order": 1,
-    "visible": true
-  },
-  {
-    "id": "iha-interface",
-    "title": "UAV Interface",
-    "description": "Unmanned Aerial Vehicle Automation System",
-    "image": "/projects/iha-interface/ihainter2.png",
-    "detailPage": "/projects/iha-interface",
-    "technologies": [
-      "React",
-      "Python",
-      "OpenCV"
-    ],
-    "order": 2,
-    "visible": true
-  },
-  {
-    "id": "air-defence",
-    "title": "Air Defence Interface",
-    "description": "Air Defense System Interface",
-    "image": "/projects/air-defence/air-defence.png",
-    "detailPage": "/projects/air-defence",
-    "technologies": [
-      "React",
-      "TypeScript",
-      "Node.js"
-    ],
-    "order": 3,
-    "visible": true
-  },
-  {
-    "id": "iha-simulation",
-    "title": "UAV Simulation",
-    "description": "UAV Simulation System",
-    "image": "/projects/iha-simulation/iha1.jpg",
-    "detailPage": "/projects/iha-simulation",
-    "technologies": [
-      "Unity",
-      "C#",
-      "Python"
-    ],
-    "order": 4,
-    "visible": true
-  },
-  {
-    "id": "cloud-resize",
-    "title": "Cloud Photo Resize",
-    "description": "AWS Cloud-Based Image Processing",
-    "image": "/projects/cloud/cloud-resize.png",
-    "detailPage": "/projects/cloud-resize",
-    "technologies": [
-      "AWS Lambda",
-      "S3",
-      "Python",
-      "Terraform"
-    ],
-    "order": 5,
-    "visible": true
-  },
-  {
     "id": "erasmus-connect",
     "title": "Erasmus Connect",
     "description": "Erasmus match platform and guide",
@@ -94,7 +19,7 @@
       "AWS SDK",
       "Redis (Bull/Rate Limit)."
     ],
-    "order": 6,
+    "order": 1,
     "visible": true,
     "longDescription": "Developed a cross-platform social network for exchange students using Next.js and React Native. Built a scalable Node.js/Express backend with MongoDB, featuring real-time messaging via Socket.io, interactive travel maps using Leaflet, and secure media management with AWS S3. 2025",
     "features": [],
@@ -102,5 +27,112 @@
     "buttonUrl": "erasmusconnect.net",
     "githubUrl": "",
     "createdAt": "2026-02-06T15:37:16.378Z"
+  },
+  {
+    "id": "claude-dash",
+    "title": "Tnega ClaudeDash",
+    "description": "Multi-Agent Control Plane & Dashboard for AI Agents",
+    "image": "/projects/claude-dash/dashboard.png",
+    "detailPage": "/projects/claude-dash",
+    "technologies": [
+      "Next.js 16",
+      "React 19",
+      "TypeScript",
+      "Node.js",
+      "Express",
+      "WebSocket",
+      "Tailwind CSS",
+      "Framer Motion"
+    ],
+    "order": 2,
+    "visible": true,
+    "longDescription": "Tnega is a centralized Management, Monitoring, and Control Plane system for AI agents (Antigravity Core, Claude Code, Codex Engine). Features automated Git hooks, file monitoring, real-time telemetry, and MCP integration for unified AI agent management.",
+    "features": [
+      "Centralized AI Agent Management",
+      "Automated Git Hook Engine",
+      "File Change Monitoring",
+      "Real-time System Telemetry",
+      "MCP Integration",
+      "WebSocket Communication"
+    ],
+    "buttonLabel": "View Project",
+    "buttonUrl": "",
+    "githubUrl": "",
+    "createdAt": "2026-05-21T02:53:00.000Z"
+  },
+  {
+    "id": "ida-interface",
+    "title": "IDA - Interface",
+    "description": "Ground Control Station Interface",
+    "image": "/projects/ida/ida.jpg",
+    "detailPage": "/projects/ida-interface",
+    "technologies": [
+      "React",
+      "Node.js",
+      "Python",
+      "TensorFlow",
+      "D3.js",
+      "TypeScript",
+      "GraphQL"
+    ],
+    "order": 3,
+    "visible": true
+  },
+  {
+    "id": "iha-interface",
+    "title": "UAV Interface",
+    "description": "Unmanned Aerial Vehicle Automation System",
+    "image": "/projects/iha-interface/ihainter2.png",
+    "detailPage": "/projects/iha-interface",
+    "technologies": [
+      "React",
+      "Python",
+      "OpenCV"
+    ],
+    "order": 4,
+    "visible": true
+  },
+  {
+    "id": "air-defence",
+    "title": "Air Defence Interface",
+    "description": "Air Defense System Interface",
+    "image": "/projects/air-defence/air-defence.png",
+    "detailPage": "/projects/air-defence",
+    "technologies": [
+      "React",
+      "TypeScript",
+      "Node.js"
+    ],
+    "order": 5,
+    "visible": true
+  },
+  {
+    "id": "iha-simulation",
+    "title": "UAV Simulation",
+    "description": "UAV Simulation System",
+    "image": "/projects/iha-simulation/iha1.jpg",
+    "detailPage": "/projects/iha-simulation",
+    "technologies": [
+      "Unity",
+      "C#",
+      "Python"
+    ],
+    "order": 6,
+    "visible": true
+  },
+  {
+    "id": "cloud-resize",
+    "title": "Cloud Photo Resize",
+    "description": "AWS Cloud-Based Image Processing",
+    "image": "/projects/cloud/cloud-resize.png",
+    "detailPage": "/projects/cloud-resize",
+    "technologies": [
+      "AWS Lambda",
+      "S3",
+      "Python",
+      "Terraform"
+    ],
+    "order": 7,
+    "visible": true
   }
 ]
