@@ -272,165 +272,171 @@ const ProjectCard = ({
 
   const isLast = index === total - 1;
   const scale = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.93]);
-  const opacity = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.35]);
+  const cardOpacity = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.15]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.4], [1, isLast ? 1 : 0]);
 
   const telemetry = getTelemetryConfig(project);
 
   return (
     <div
       ref={container}
-      className={`relative w-full ${isMobile ? 'h-auto mb-12' : 'h-[90vh] flex items-center justify-center sticky top-[100px]'}`}
+      className={`relative w-full ${isMobile ? 'h-auto mb-12' : 'h-[80vh] flex items-center justify-center sticky top-[88px]'}`}
       style={
         !isMobile
           ? {
-              top: `calc(100px + ${index * 24}px)`,
+              top: `calc(88px + ${index * 16}px)`,
             }
           : undefined
       }
     >
       <motion.div
-        style={!isMobile ? { scale, opacity } : undefined}
+        style={!isMobile ? { scale, opacity: cardOpacity } : undefined}
         className="group relative w-full max-w-6xl h-auto md:min-h-[460px] rounded-[32px] glass-strong hover:border-purple-500/40 hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] transition-all duration-500 flex flex-col p-6 md:p-8 overflow-hidden shadow-2xl"
       >
-        {/* Top Row: Number, Category, Title, Button */}
-        <div className="flex items-center justify-between w-full pb-4">
-          <div className="flex items-center gap-4">
-            {/* Large 2-digit number */}
-            <span className="font-black text-4xl md:text-5xl tracking-tighter text-white font-mono opacity-90">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            {/* Category & Title */}
-            <div className="flex flex-col">
-              <span className="text-[10px] tracking-widest text-purple-300 font-mono font-bold uppercase">
-                {telemetry.category}
+        <motion.div
+          style={!isMobile ? { opacity: contentOpacity } : undefined}
+          className="flex flex-col flex-grow w-full relative z-10"
+        >
+          {/* Top Row: Number, Category, Title, Button */}
+          <div className="flex items-center justify-between w-full pb-4">
+            <div className="flex items-center gap-4">
+              {/* Large 2-digit number */}
+              <span className="font-black text-4xl md:text-5xl tracking-tighter text-white font-mono opacity-90">
+                {String(index + 1).padStart(2, '0')}
               </span>
-              <h3 className="text-xl md:text-2xl font-bold tracking-wide text-white group-hover:text-purple-300 transition-colors duration-300">
-                {project.title.toUpperCase()}
-              </h3>
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            <Link
-              href={project.buttonUrl || project.detailPage}
-              target={project.buttonUrl ? "_blank" : undefined}
-              className="px-5 py-2.5 rounded-full border border-white/20 hover:border-white/50 text-white text-[11px] font-mono font-bold tracking-wider transition-all hover:bg-white/5 uppercase cursor-pointer"
-            >
-              {project.buttonUrl ? "LIVE PROJECT ↗" : "VIEW DETAILS ↗"}
-            </Link>
-          </div>
-        </div>
-
-        {/* Divider line */}
-        <div className="w-full border-t border-white/10 mb-5" />
-
-        {/* Main Grid Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full flex-grow">
-          {/* Left Column (Details, tags, system overview, architecture flow) */}
-          <div className="lg:col-span-5 flex flex-col gap-6 justify-between h-full py-1">
-            <div className="space-y-5">
-              {/* Tech Tags */}
-              {project.technologies && project.technologies.length > 0 && (
-                <div className="flex flex-wrap gap-2.5 mb-2">
-                  {project.technologies.slice(0, 6).map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-200 font-mono font-medium hover:bg-white/15 transition-colors duration-300"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                  {project.technologies.length > 6 && (
-                    <span className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-400 font-mono font-medium">
-                      +{project.technologies.length - 6} more
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed font-normal">
-                {project.description}
-              </p>
-            </div>
-
-            {/* Architecture Flow HUD widget */}
-            <div className="space-y-2">
-              <span className="text-[10px] tracking-wider text-purple-300 font-mono font-bold block uppercase">ARCHITECTURE FLOW</span>
-              <div className="flex items-center gap-2 flex-wrap bg-white/[0.02] border border-white/5 rounded-2xl p-5">
-                {telemetry.nodes.map((node, nodeIdx) => {
-                  const theme = colorThemes[node.color] || colorThemes.blue;
-                  return (
-                    <div key={node.label} className="flex items-center gap-2">
-                      {nodeIdx > 0 && (
-                        <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                      <span className={`px-3 py-1 rounded text-xs font-mono font-bold ${theme.text} ${theme.bg} border ${theme.border} shadow-sm`}>
-                        {node.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* System Overview Widget */}
-            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <span className="text-[10px] tracking-wider text-gray-400 font-mono font-bold block">SYSTEM OVERVIEW</span>
-                <span className="text-sm md:text-base font-extrabold tracking-wide uppercase text-white leading-snug block">
-                  {telemetry.systemOverview}
+              {/* Category & Title */}
+              <div className="flex flex-col">
+                <span className="text-[10px] tracking-widest text-purple-300 font-mono font-bold uppercase">
+                  {telemetry.category}
                 </span>
+                <h3 className="text-xl md:text-2xl font-bold tracking-wide text-white group-hover:text-purple-300 transition-colors duration-300">
+                  {project.title.toUpperCase()}
+                </h3>
               </div>
-              <div className="flex-shrink-0">
-                <svg className="w-14 h-14 text-white/20" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="6 6" className="animate-[spin_20s_linear_infinite]" />
-                  <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="3 3" className="animate-[spin_10s_linear_infinite_reverse]" />
-                  <circle cx="50" cy="50" r="18" fill="rgba(255,255,255,0.05)" />
-                  <text x="50" y="54" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold" fontFamily="monospace" className="tracking-tighter">NODE</text>
-                </svg>
-              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Link
+                href={project.buttonUrl || project.detailPage}
+                target={project.buttonUrl ? "_blank" : undefined}
+                className="px-5 py-2.5 rounded-full border border-white/20 hover:border-white/50 text-white text-[11px] font-mono font-bold tracking-wider transition-all hover:bg-white/5 uppercase cursor-pointer"
+              >
+                {project.buttonUrl ? "LIVE PROJECT ↗" : "VIEW DETAILS ↗"}
+              </Link>
             </div>
           </div>
 
-          {/* Right Column (Screenshot Image - Web/Device Mockup Window) */}
-          <div className="lg:col-span-7 w-full h-full flex items-center justify-center">
-            <div className="relative w-full aspect-[16/10] rounded-3xl border border-white/10 group-hover:border-purple-500/30 bg-zinc-950/40 backdrop-blur-sm transition-all duration-500 shadow-2xl p-3 md:p-4 flex flex-col justify-between">
-              {/* Window Frame */}
-              <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 flex flex-col shadow-inner">
-                {/* Title Bar */}
-                <div className="h-7 w-full bg-zinc-900/90 border-b border-white/5 flex items-center px-4 justify-between select-none">
-                  {/* Left: Window Controls */}
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-[#ff5f56]" />
-                    <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
-                    <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
+          {/* Divider line */}
+          <div className="w-full border-t border-white/10 mb-5" />
+
+          {/* Main Grid Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full flex-grow">
+            {/* Left Column (Details, tags, system overview, architecture flow) */}
+            <div className="lg:col-span-5 flex flex-col gap-6 justify-between h-full py-1">
+              <div className="space-y-5">
+                {/* Tech Tags */}
+                {project.technologies && project.technologies.length > 0 && (
+                  <div className="flex flex-wrap gap-2.5 mb-2">
+                    {project.technologies.slice(0, 6).map((tech) => (
+                      <span
+                        key={tech}
+                        className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-200 font-mono font-medium hover:bg-white/15 transition-colors duration-300"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                    {project.technologies.length > 6 && (
+                      <span className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-400 font-mono font-medium">
+                        +{project.technologies.length - 6} more
+                      </span>
+                    )}
                   </div>
-                  {/* Center: Window Title */}
-                  <div className="text-[10px] font-mono text-gray-500 font-medium tracking-tight">
-                    {project.title.toLowerCase().replace(/\s+/g, '-')}.sys
-                  </div>
-                  {/* Right: Spacer for balance */}
-                  <div className="w-10" />
+                )}
+
+                <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed font-normal">
+                  {project.description}
+                </p>
+              </div>
+
+              {/* Architecture Flow HUD widget */}
+              <div className="space-y-2">
+                <span className="text-[10px] tracking-wider text-purple-300 font-mono font-bold block uppercase">ARCHITECTURE FLOW</span>
+                <div className="flex items-center gap-2 flex-wrap bg-white/[0.02] border border-white/5 rounded-2xl p-5">
+                  {telemetry.nodes.map((node, nodeIdx) => {
+                    const theme = colorThemes[node.color] || colorThemes.blue;
+                    return (
+                      <div key={node.label} className="flex items-center gap-2">
+                        {nodeIdx > 0 && (
+                          <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                          </svg>
+                        )}
+                        <span className={`px-3 py-1 rounded text-xs font-mono font-bold ${theme.text} ${theme.bg} border ${theme.border} shadow-sm`}>
+                          {node.label}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-                
-                {/* Image Container */}
-                <div className="relative flex-grow w-full bg-zinc-950 overflow-hidden flex items-center justify-center p-2">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
-                    loading="lazy"
-                  />
+              </div>
+
+              {/* System Overview Widget */}
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] tracking-wider text-gray-400 font-mono font-bold block">SYSTEM OVERVIEW</span>
+                  <span className="text-sm md:text-base font-extrabold tracking-wide uppercase text-white leading-snug block">
+                    {telemetry.systemOverview}
+                  </span>
+                </div>
+                <div className="flex-shrink-0">
+                  <svg className="w-14 h-14 text-white/20" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="6 6" className="animate-[spin_20s_linear_infinite]" />
+                    <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="3 3" className="animate-[spin_10s_linear_infinite_reverse]" />
+                    <circle cx="50" cy="50" r="18" fill="rgba(255,255,255,0.05)" />
+                    <text x="50" y="54" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold" fontFamily="monospace" className="tracking-tighter">NODE</text>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column (Screenshot Image - Web/Device Mockup Window) */}
+            <div className="lg:col-span-7 w-full h-full flex items-center justify-center">
+              <div className="relative w-full aspect-[16/10] rounded-3xl border border-white/10 group-hover:border-purple-500/30 bg-zinc-950/40 backdrop-blur-sm transition-all duration-500 shadow-2xl p-3 md:p-4 flex flex-col justify-between">
+                {/* Window Frame */}
+                <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 flex flex-col shadow-inner">
+                  {/* Title Bar */}
+                  <div className="h-7 w-full bg-zinc-900/90 border-b border-white/5 flex items-center px-4 justify-between select-none">
+                    {/* Left: Window Controls */}
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-[#ff5f56]" />
+                      <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                      <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
+                    </div>
+                    {/* Center: Window Title */}
+                    <div className="text-[10px] font-mono text-gray-500 font-medium tracking-tight">
+                      {project.title.toLowerCase().replace(/\s+/g, '-')}.sys
+                    </div>
+                    {/* Right: Spacer for balance */}
+                    <div className="w-10" />
+                  </div>
+                  
+                  {/* Image Container */}
+                  <div className="relative flex-grow w-full bg-zinc-950 overflow-hidden flex items-center justify-center p-2">
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Hover Gradient Overlay */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
