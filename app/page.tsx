@@ -265,6 +265,12 @@ const ProjectCard = ({
   isMobile: boolean;
 }) => {
   const container = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: container,
     offset: ['start start', 'end start'],
@@ -276,25 +282,23 @@ const ProjectCard = ({
   const contentOpacity = useTransform(scrollYProgress, [0, 0.4], [1, isLast ? 1 : 0]);
 
   const telemetry = getTelemetryConfig(project);
+  const showFramerEffects = isMounted && !isMobile;
 
   return (
     <div
       ref={container}
-      className={`relative w-full ${isMobile ? 'h-auto mb-12' : 'h-[80vh] flex items-center justify-center sticky top-[88px]'}`}
-      style={
-        !isMobile
-          ? {
-              top: `calc(88px + ${index * 16}px)`,
-            }
-          : undefined
-      }
+      className="relative w-full h-auto mb-12 md:mb-0 md:h-[85vh] md:flex md:items-start md:justify-center md:sticky md:top-[var(--stack-top)] md:pt-12"
+      style={{
+        '--stack-top': `calc(80px + ${index * 40}px)`,
+        zIndex: index + 10,
+      } as React.CSSProperties}
     >
       <motion.div
-        style={!isMobile ? { scale, opacity: cardOpacity } : undefined}
-        className="group relative w-full max-w-6xl h-auto md:min-h-[460px] rounded-[32px] glass-strong hover:border-purple-500/40 hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] transition-all duration-500 flex flex-col p-6 md:p-8 overflow-hidden shadow-2xl"
+        style={showFramerEffects ? { scale, opacity: cardOpacity } : undefined}
+        className="group relative w-full max-w-6xl h-auto md:min-h-[460px] rounded-[32px] bg-[#0b0c15] border border-white/10 hover:border-purple-500/40 hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] transition-all duration-500 flex flex-col p-6 md:p-8 overflow-hidden shadow-2xl"
       >
         <motion.div
-          style={!isMobile ? { opacity: contentOpacity } : undefined}
+          style={showFramerEffects ? { opacity: contentOpacity } : undefined}
           className="flex flex-col flex-grow w-full relative z-10"
         >
           {/* Top Row: Number, Category, Title, Button */}
@@ -687,7 +691,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center relative z-10"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 text-center relative z-10"
         >
           {/* Title with 3D Holographic Neon Effect */}
           <motion.div
@@ -696,18 +700,10 @@ export default function Home() {
             transition={{ delay: 0.2, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
             className="mb-6 relative"
           >
-            <h1 className="text-6xl md:text-8xl font-black mb-4 relative inline-block perspective-1000">
-              {/* 3D Shadow Layers */}
-              <span className="absolute inset-0 text-purple-600/40 blur-sm" style={{ transform: 'translate(-2px, -2px)' }}>
-                YUSUF KAYA
-              </span>
-              <span className="absolute inset-0 text-pink-600/40 blur-sm" style={{ transform: 'translate(2px, 2px)' }}>
-                YUSUF KAYA
-              </span>
-
-              {/* Main Text with Holographic Effect */}
+            <h1 className="text-5xl md:text-8xl font-black mb-4 relative inline-block perspective-1000">
+              {/* Main Text with Holographic Effect & 3D native shadow */}
               <motion.span
-                className="relative bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 drop-shadow-2xl"
+                className="relative bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 drop-shadow-2xl inline-block"
                 animate={{
                   backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
                 }}
@@ -718,7 +714,7 @@ export default function Home() {
                 }}
                 style={{
                   backgroundSize: '200% 200%',
-                  textShadow: '0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(99, 102, 241, 0.2)',
+                  textShadow: '-2px -2px 0px rgba(147, 51, 234, 0.4), 2px 2px 0px rgba(219, 39, 119, 0.4), 0 0 20px rgba(168, 85, 247, 0.5), 0 0 40px rgba(236, 72, 153, 0.3), 0 0 60px rgba(99, 102, 241, 0.2)',
                   WebkitTextStroke: '1px rgba(255, 255, 255, 0.1)'
                 }}
               >
@@ -852,7 +848,7 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="flex flex-col items-center w-full mt-12 gap-0">
+          <div className="flex flex-col items-center w-full mt-12 gap-0" style={{ marginBottom: '20vh' }}>
             {projects.map((project, index) => (
               <ProjectCard
                 key={project.id}
