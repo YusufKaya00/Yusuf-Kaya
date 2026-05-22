@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// OpenRouter API anahtarı (Mistral Devstral için)
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+// NVIDIA API anahtarı (NVIDIA API Catalog için)
+const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY || '';
 const TIMEOUT_DURATION = 30000; // 30 saniye
 
 // Zaman aşımı kontrolü için Promise
@@ -16,21 +16,19 @@ const timeoutPromise = (ms: number) => {
 
 // API anahtarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
-  return key && key.length >= 30 && key.startsWith('sk-or-');
+  return key && key.length >= 20;
 }
 
-// OpenRouter API ile içerik oluşturma (Mistral Devstral)
-async function generateWithOpenRouter(prompt: string) {
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+// NVIDIA API ile içerik oluşturma (meta/llama-3.3-70b-instruct)
+async function generateWithNvidia(prompt: string) {
+  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
-      'X-Title': 'Yusuf Kaya Portfolio'
+      'Authorization': `Bearer ${NVIDIA_API_KEY}`
     },
     body: JSON.stringify({
-      model: 'mistralai/devstral-2512:free',
+      model: 'meta/llama-3.3-70b-instruct',
       messages: [
         { role: 'system', content: 'Sen profesyonel bir özgeçmiş oluşturucusun. Kullanıcının verdiği bilgilere göre JSON formatında CV hazırlayacaksın.' },
         { role: 'user', content: prompt }
@@ -41,8 +39,8 @@ async function generateWithOpenRouter(prompt: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`OpenRouter API Hatası: ${errorData.error?.message || 'Bilinmeyen hata'}`);
+    const errorText = await response.text();
+    throw new Error(`NVIDIA API Hatası: ${response.status} ${errorText}`);
   }
 
   const data = await response.json();
@@ -55,30 +53,20 @@ export async function POST(request: Request) {
 
     // Debug environment variables
     console.log('Environment variables:');
-    console.log('OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length || 0);
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('OPENROUTER') || key.includes('API')));
+    console.log('NVIDIA_API_KEY length:', NVIDIA_API_KEY.length);
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('NVIDIA') || key.includes('OPENROUTER') || key.includes('API')));
 
-    // API anahtarını kontrol et
-    // NOT: Bu sadece bir test içindir - gerçek uygulamalarda API anahtarlarını kodda saklamayın!
-    // Test ettikten sonra kaldırın ve sadece çevre değişkeniyle çalışın
-    const apiKey = process.env.OPENROUTER_API_KEY || '';
-
-    // Gerçek API anahtarı kontrolü
-    if (apiKey === 'YOUR_TEST_API_KEY_HERE') {
-      console.log('⚠️ Using test API key - replace with your actual key');
+    if (!isValidAPIKey(NVIDIA_API_KEY)) {
+      throw new Error('Geçerli NVIDIA API anahtarı bulunamadı');
     }
 
     const openai = new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey: apiKey,
-      defaultHeaders: {
-        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
-        "X-Title": "CV Generator",
-      },
+      baseURL: "https://integrate.api.nvidia.com/v1",
+      apiKey: NVIDIA_API_KEY,
     });
 
     const completion = await openai.chat.completions.create({
-      model: "mistralai/devstral-2512:free",
+      model: "meta/llama-3.3-70b-instruct",
       messages: [
         {
           role: "system",

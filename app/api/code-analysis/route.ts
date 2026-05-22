@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
 
-// OpenRouter API anahtarı (Mistral Devstral için)
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+// NVIDIA API anahtarı (NVIDIA API Catalog için)
+const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY || '';
 const TIMEOUT_DURATION = 30000; // 30 saniye
 
 // API anahtarlarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
-  // OpenRouter API anahtarı kontrolü
-  return key && key.length >= 30 && key.startsWith('sk-or-');
+  // En az 20 karakter uzunluğunda olması yeterli (nvapi- veya sk-or- olabilir)
+  return key && key.length >= 20;
 }
 
 // Timeout promise oluştur
@@ -19,20 +19,20 @@ function timeoutPromise(ms: number) {
   });
 }
 
-// Kod analizi için OpenRouter API çağrısı (Mistral Devstral)
-async function analyzeCodeWithOpenRouter(
+// Kod analizi için NVIDIA API çağrısı (meta/llama-3.3-70b-instruct)
+async function analyzeCodeWithNvidia(
   code: string,
   language: string,
   analysisTypes: string[]
 ) {
   // API anahtarı kontrolü
-  if (!isValidAPIKey(OPENROUTER_API_KEY)) {
+  if (!isValidAPIKey(NVIDIA_API_KEY)) {
     console.log('Geçerli API anahtarı bulunamadı, simüle edilmiş analiz kullanılıyor');
     return simulateCodeAnalysis(code, language, analysisTypes);
   }
 
   try {
-    console.log('OpenRouter API ile kod analizi yapılıyor...');
+    console.log('NVIDIA API ile kod analizi yapılıyor...');
 
     // AI istek metni oluşturma
     const typeDescriptions = analysisTypes.map(type => {
@@ -72,18 +72,16 @@ async function analyzeCodeWithOpenRouter(
 
     console.log('API isteği gönderiliyor...');
 
-    // OpenRouter API'ye istek gönder
+    // NVIDIA API'ye istek gönder
     const response = await Promise.race([
-      fetch('https://openrouter.ai/api/v1/chat/completions', {
+      fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
-          'X-Title': 'Yusuf Kaya Portfolio'
+          'Authorization': `Bearer ${NVIDIA_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'mistralai/devstral-2512:free',
+          model: 'meta/llama-3.3-70b-instruct',
           messages: [
             { role: 'system', content: 'Sen profesyonel bir kod analisti ve yazılım geliştirme uzmanısın. Kod kalitesi, güvenlik, performans ve temiz kod prensipleri konusunda uzmanlaştın.' },
             { role: 'user', content: promptText }
@@ -93,8 +91,8 @@ async function analyzeCodeWithOpenRouter(
         })
       }).then(res => {
         if (!res.ok) {
-          return res.json().then(errData => {
-            throw new Error(`OpenRouter API Hatası: ${errData.error?.message || 'Bilinmeyen hata'}`);
+          return res.text().then(errText => {
+            throw new Error(`NVIDIA API Hatası: ${res.status} ${errText}`);
           });
         }
         return res.json();
@@ -114,7 +112,7 @@ async function analyzeCodeWithOpenRouter(
 
     throw new Error('API yanıtı boş geldi');
   } catch (error) {
-    console.error('OpenRouter API hatası:', error);
+    console.error('NVIDIA API hatası:', error);
     // Hata durumunda simüle edilmiş analizi kullan
     return simulateCodeAnalysis(code, language, analysisTypes);
   }
@@ -296,11 +294,11 @@ export async function POST(request: Request) {
 
     // Kod analizi
     try {
-      const results = await analyzeCodeWithOpenRouter(code, language, analysisTypes);
+      const results = await analyzeCodeWithNvidia(code, language, analysisTypes);
 
       return NextResponse.json({
         results,
-        source: isValidAPIKey(OPENROUTER_API_KEY) ? 'openrouter' : 'simulation'
+        source: isValidAPIKey(NVIDIA_API_KEY) ? 'nvidia' : 'simulation'
       });
     } catch (error: any) {
       console.error('Analiz hatası:', error.message || error);

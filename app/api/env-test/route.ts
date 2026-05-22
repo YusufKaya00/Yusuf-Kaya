@@ -18,8 +18,12 @@ export async function GET() {
     
     return NextResponse.json({ 
       envVars,
-      hasQwenKey: !!process.env.QWEN_API_KEY,
-      qwenKeyLength: process.env.QWEN_API_KEY?.length || 0,
+      hasNvidiaNimKey: !!process.env.NVIDIA_NIM_API_KEY,
+      nvidiaNimKeyLength: process.env.NVIDIA_NIM_API_KEY?.length || 0,
+      hasNvidiaKey: !!process.env.NVIDIA_API_KEY,
+      nvidiaKeyLength: process.env.NVIDIA_API_KEY?.length || 0,
+      hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
+      openRouterKeyLength: process.env.OPENROUTER_API_KEY?.length || 0,
     });
   } catch (error) {
     console.error('Error accessing environment variables:', error);

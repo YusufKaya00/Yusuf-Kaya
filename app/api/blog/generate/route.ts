@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 
-// OpenRouter API - Mistral Devstral 2512 (free tier) kullanıyoruz
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
+// NVIDIA API anahtarı (NVIDIA API Catalog için)
+const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY || '';
 
 // API anahtarlarının geçerli olup olmadığını kontrol eden fonksiyon
 function isValidAPIKey(key: string) {
-  // OpenRouter API anahtarları "sk-or-" ile başlar
-  return key && key.length >= 30 && key.startsWith('sk-or-');
+  // En az 20 karakter uzunluğunda olması yeterli (nvapi- veya sk-or- olabilir)
+  return key && key.length >= 20;
 }
 
 // Zaman aşımı süresini artırıyoruz (milisaniye) - 30 saniye
@@ -136,16 +136,16 @@ function selectFallbackContent(prompt: string) {
   return content;
 }
 
-// OpenRouter API ile içerik üretimi (Mistral Devstral 2512)
-async function generateContentWithOpenRouter(prompt: string) {
+// NVIDIA API ile içerik üretimi (meta/llama-3.3-70b-instruct)
+async function generateContentWithNvidia(prompt: string) {
   // API anahtarı kontrolü
-  if (!isValidAPIKey(OPENROUTER_API_KEY)) {
+  if (!isValidAPIKey(NVIDIA_API_KEY)) {
     console.log('Geçerli API anahtarı bulunamadı, yedek içerik kullanılıyor');
     return selectFallbackContent(prompt);
   }
 
   try {
-    console.log('OpenRouter API ile içerik üretiliyor (Mistral Devstral)...');
+    console.log('NVIDIA API ile içerik üretiliyor (meta/llama-3.3-70b-instruct)...');
 
     // Prompt hazırlama
     const promptText = `Lütfen aşağıdaki konu hakkında Türkçe bir blog yazısı oluştur. 
@@ -158,23 +158,23 @@ Konu: ${prompt}`;
 
     console.log('API isteği gönderiliyor:', promptText.substring(0, 50) + '...');
 
-    // OpenRouter API çağrısı
-    const fetchPromise = fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // NVIDIA API çağrısı
+    const fetchPromise = fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://yusuf-kaya.onrender.com',
-        'X-Title': 'Yusuf Kaya Portfolio Blog'
+        'Authorization': `Bearer ${NVIDIA_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'mistralai/devstral-2512:free',
+        model: 'meta/llama-3.3-70b-instruct',
         messages: [
           {
             role: 'user',
             content: promptText
           }
-        ]
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
       })
     });
 
@@ -186,7 +186,7 @@ Konu: ${prompt}`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter API hatası:', response.status, errorText);
+      console.error('NVIDIA API hatası:', response.status, errorText);
       throw new Error(`API yanıt hatası: ${response.status}`);
     }
 
@@ -201,7 +201,7 @@ Konu: ${prompt}`;
 
     throw new Error('API yanıtı boş geldi');
   } catch (error) {
-    console.error('OpenRouter API hatası:', error);
+    console.error('NVIDIA API hatası:', error);
     return selectFallbackContent(prompt);
   }
 }
@@ -224,17 +224,17 @@ export async function POST(request: Request) {
 
     // İçerik üretme
     let content;
-    let source = 'openrouter'; // Varsayılan olarak API'den geldiğini varsayalım
+    let source = 'nvidia'; // Varsayılan olarak API'den geldiğini varsayalım
 
     try {
       // API anahtarı kontrolü
-      if (!isValidAPIKey(OPENROUTER_API_KEY)) {
+      if (!isValidAPIKey(NVIDIA_API_KEY)) {
         console.log('API anahtarı geçerli değil - yedek içerik kullanılıyor');
         content = selectFallbackContent(prompt);
         source = 'fallback_invalid_key';
       } else {
-        // OpenRouter API ile içerik üretmeyi dene
-        content = await generateContentWithOpenRouter(prompt);
+        // NVIDIA API ile içerik üretmeyi dene
+        content = await generateContentWithNvidia(prompt);
       }
     } catch (error: any) {
       // Hata durumunda yedek içerik kullan
