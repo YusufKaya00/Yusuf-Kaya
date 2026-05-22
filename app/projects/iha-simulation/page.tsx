@@ -170,12 +170,12 @@ function IhaSimulationProject() {
               <div className="glass-strong rounded-2xl p-6 border border-white/10">
                 <h3 className="text-xl font-bold text-white mb-4">Technologies</h3>
                 <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">Linux</span>
+                  <span className="px-3 py-1 glass border border-orange-500/30 text-orange-400 rounded-full text-xs font-medium">Gazebo</span>
+                  <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">ROS</span>
                   <span className="px-3 py-1 glass border border-teal-500/30 text-teal-400 rounded-full text-xs font-medium">Unity3D</span>
                   <span className="px-3 py-1 glass border border-purple-500/30 text-purple-400 rounded-full text-xs font-medium">C#</span>
                   <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">Physics Engine</span>
-                  <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">ROS</span>
-                  <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">MATLAB</span>
-                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">OpenCV</span>
                 </div>
               </div>
 

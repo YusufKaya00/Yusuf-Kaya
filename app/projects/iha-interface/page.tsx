@@ -158,12 +158,10 @@ export default function IhaInterfaceProject() {
               <div className="glass-strong rounded-2xl p-6 border border-white/10">
                 <h3 className="text-xl font-bold text-white mb-4">Technologies</h3>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 glass border border-cyan-500/30 text-cyan-400 rounded-full text-xs font-medium">Python</span>
-                  <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">Qt/PyQt</span>
+                  <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">C#</span>
                   <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">MAVLink</span>
-                  <span className="px-3 py-1 glass border border-purple-500/30 text-purple-400 rounded-full text-xs font-medium">Mission Planner</span>
-                  <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">OpenCV</span>
-                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">Serial Communication</span>
+                  <span className="px-3 py-1 glass border border-cyan-500/30 text-cyan-400 rounded-full text-xs font-medium">Python</span>
+                  <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">Google Maps</span>
                 </div>
               </div>
 

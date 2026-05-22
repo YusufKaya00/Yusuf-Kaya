@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
 
 // Performance: Fotoğraf listesini component dışına al (her render'da yeniden oluşturulmasın)
@@ -33,7 +33,413 @@ interface Project {
   technologies: string[];
   order: number;
   visible: boolean;
+  buttonLabel?: string;
+  buttonUrl?: string;
+  githubUrl?: string;
 }
+
+interface PipelineNode {
+  label: string;
+  color: string;
+}
+
+interface TelemetryConfig {
+  category: string;
+  systemOverview: string;
+  pipelineTitle: string;
+  badgeText: string;
+  badgeColor: string;
+  nodes: PipelineNode[];
+  flowDetail: string;
+  footerStatus: string;
+  footerStatusColor: string;
+}
+
+const PROJECT_TELEMETRY: Record<string, TelemetryConfig> = {
+  'erasmus-connect': {
+    category: 'WEB & MOBILE',
+    systemOverview: 'CROSS-PLATFORM STUDENT SOCIAL NETWORK',
+    pipelineTitle: 'SYNC CONTROL PIPELINE',
+    badgeText: 'SOCKET.IO ACTIVE',
+    badgeColor: 'purple',
+    nodes: [
+      { label: 'React / Next.js', color: 'pink' },
+      { label: 'Express API', color: 'purple' },
+      { label: 'Supabase / Mongo', color: 'emerald' }
+    ],
+    flowDetail: 'Express API // MongoDB & Supabase // Socket.io Sync',
+    footerStatus: 'Sync engine online',
+    footerStatusColor: 'purple'
+  },
+  'claude-dash': {
+    category: 'AI & DEV TOOLS',
+    systemOverview: 'MULTI-AGENT CONTROL PLANE & TELEMETRY',
+    pipelineTitle: 'AGENT CORE PROCESSOR',
+    badgeText: 'TELEMETRY ONLINE',
+    badgeColor: 'cyan',
+    nodes: [
+      { label: 'Next.js / React', color: 'pink' },
+      { label: 'Node.js / Express', color: 'purple' },
+      { label: 'WebSocket / MCP', color: 'cyan' }
+    ],
+    flowDetail: 'Real-Time File Monitoring // Hook Autoprompts // Live Terminal',
+    footerStatus: 'Antigravity active',
+    footerStatusColor: 'cyan'
+  },
+  'ida-interface': {
+    category: 'AEROSPACE & CONTROL',
+    systemOverview: 'DRONE GROUND CONTROL STATION',
+    pipelineTitle: 'GCS TELEMETRY RECEIVER',
+    badgeText: 'LINK STATUS: STABLE',
+    badgeColor: 'emerald',
+    nodes: [
+      { label: 'Flutter GCS', color: 'purple' },
+      { label: 'Python Backend', color: 'blue' },
+      { label: 'Radar & Telemetry', color: 'emerald' }
+    ],
+    flowDetail: 'Telemetry Stream // Radar Sweep // Flight Data Analysis',
+    footerStatus: 'Telemetry synchronized',
+    footerStatusColor: 'emerald'
+  },
+  'iha-interface': {
+    category: 'UAV CONTROL SYSTEM',
+    systemOverview: 'UAV AUTOMATION & MISSION PLANNING',
+    pipelineTitle: 'MISSION CONTROL PROCESSOR',
+    badgeText: 'TELEMETRY LINK: OK',
+    badgeColor: 'cyan',
+    nodes: [
+      { label: 'Python Engine', color: 'blue' },
+      { label: 'MAVLink Telemetry', color: 'cyan' },
+      { label: 'C# GUI / Maps', color: 'purple' }
+    ],
+    flowDetail: 'MAVLink Protocol // Google Maps Navigation // Mission Planning',
+    footerStatus: 'Control link active',
+    footerStatusColor: 'cyan'
+  },
+  'air-defence': {
+    category: 'DEFENSE SYSTEMS',
+    systemOverview: 'RADAR TARGET TRACKING & THREAT SCORING',
+    pipelineTitle: 'TACTICAL AIR SCANNERS',
+    badgeText: 'RADAR ACTIVE',
+    badgeColor: 'rose',
+    nodes: [
+      { label: 'Python Stream', color: 'blue' },
+      { label: 'OpenCV Processing', color: 'cyan' },
+      { label: 'C# Control UI', color: 'purple' }
+    ],
+    flowDetail: 'Threat Evaluation // OpenCV Target Tracking // Image Processing',
+    footerStatus: 'Radar sweeping active',
+    footerStatusColor: 'rose'
+  },
+  'iha-simulation': {
+    category: '3D & SIMULATION',
+    systemOverview: 'FLIGHT DYNAMICS & PHYSICS SIMULATOR',
+    pipelineTitle: 'PHYSICS ENGINE PROCESSOR',
+    badgeText: 'SIMULATOR OPERATIONAL',
+    badgeColor: 'amber',
+    nodes: [
+      { label: 'Linux (Ubuntu)', color: 'rose' },
+      { label: 'Gazebo Sim', color: 'amber' },
+      { label: 'ROS Core', color: 'emerald' }
+    ],
+    flowDetail: 'Aerodynamics Solver // 3D Render // Virtual Telemetry',
+    footerStatus: 'Virtual link operational',
+    footerStatusColor: 'amber'
+  },
+  'cloud-resize': {
+    category: 'CLOUD & DEVOPS',
+    systemOverview: 'SERVERLESS IMAGE OPTIMIZATION PIPELINE',
+    pipelineTitle: 'AWS SERVERLESS ARCHITECTURE',
+    badgeText: 'LAMBDA RESIZE ACTIVE',
+    badgeColor: 'cyan',
+    nodes: [
+      { label: 'AWS S3 Trigger', color: 'blue' },
+      { label: 'Lambda (Sharp)', color: 'purple' },
+      { label: 'CloudFront CDN', color: 'emerald' }
+    ],
+    flowDetail: 'Trigger Resize: Thumb (100px) // Medium (500px) // Optimal (WebP)',
+    footerStatus: 'Cloud optimizer active',
+    footerStatusColor: 'cyan'
+  }
+};
+
+const colorThemes: Record<string, {
+  border: string;
+  text: string;
+  bg: string;
+  shadow: string;
+  badge: string;
+}> = {
+  blue: {
+    border: 'border-blue-500/20 group-hover:border-blue-500/40',
+    text: 'text-blue-400',
+    bg: 'bg-blue-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]',
+    badge: 'border-blue-500/30 text-blue-400 bg-blue-500/5'
+  },
+  purple: {
+    border: 'border-purple-500/20 group-hover:border-purple-500/40',
+    text: 'text-purple-400',
+    bg: 'bg-purple-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.15)]',
+    badge: 'border-purple-500/30 text-purple-400 bg-purple-500/5'
+  },
+  emerald: {
+    border: 'border-emerald-500/20 group-hover:border-emerald-500/40',
+    text: 'text-emerald-400',
+    bg: 'bg-emerald-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]',
+    badge: 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5'
+  },
+  cyan: {
+    border: 'border-cyan-500/20 group-hover:border-cyan-500/40',
+    text: 'text-cyan-400',
+    bg: 'bg-cyan-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.15)]',
+    badge: 'border-cyan-500/30 text-cyan-400 bg-cyan-500/5'
+  },
+  pink: {
+    border: 'border-pink-500/20 group-hover:border-pink-500/40',
+    text: 'text-pink-400',
+    bg: 'bg-pink-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]',
+    badge: 'border-pink-500/30 text-pink-400 bg-pink-500/5'
+  },
+  amber: {
+    border: 'border-amber-500/20 group-hover:border-amber-500/40',
+    text: 'text-amber-400',
+    bg: 'bg-amber-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+    badge: 'border-amber-500/30 text-amber-400 bg-amber-500/5'
+  },
+  rose: {
+    border: 'border-rose-500/20 group-hover:border-rose-500/40',
+    text: 'text-rose-400',
+    bg: 'bg-rose-950/20',
+    shadow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]',
+    badge: 'border-rose-500/30 text-rose-400 bg-rose-500/5'
+  }
+};
+
+const getTelemetryConfig = (project: Project): TelemetryConfig => {
+  if (PROJECT_TELEMETRY[project.id]) {
+    return PROJECT_TELEMETRY[project.id];
+  }
+  
+  // Dynamic fallback
+  const tech = project.technologies || [];
+  const nodes = tech.slice(0, 3).map((t, idx) => {
+    const colors = ['blue', 'purple', 'emerald', 'cyan', 'pink', 'amber'];
+    return {
+      label: t,
+      color: colors[idx % colors.length]
+    };
+  });
+  
+  if (nodes.length === 0) {
+    nodes.push({ label: 'Core Node', color: 'purple' });
+  }
+
+  return {
+    category: 'APPLICATION',
+    systemOverview: `${project.title.toUpperCase()} SYSTEM OVERVIEW`,
+    pipelineTitle: 'PROCESSING PIPELINE',
+    badgeText: 'RUNNING',
+    badgeColor: 'emerald',
+    nodes,
+    flowDetail: tech.join(' // ') || 'Active Node Status Monitoring',
+    footerStatus: 'System stabilized',
+    footerStatusColor: 'emerald'
+  };
+};
+
+const ProjectCard = ({
+  project,
+  index,
+  total,
+  isMobile,
+}: {
+  project: Project;
+  index: number;
+  total: number;
+  isMobile: boolean;
+}) => {
+  const container = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ['start start', 'end start'],
+  });
+
+  const isLast = index === total - 1;
+  const scale = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.93]);
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, isLast ? 1 : 0.35]);
+
+  const telemetry = getTelemetryConfig(project);
+
+  return (
+    <div
+      ref={container}
+      className={`relative w-full ${isMobile ? 'h-auto mb-12' : 'h-[90vh] flex items-center justify-center sticky top-[100px]'}`}
+      style={
+        !isMobile
+          ? {
+              top: `calc(100px + ${index * 24}px)`,
+            }
+          : undefined
+      }
+    >
+      <motion.div
+        style={!isMobile ? { scale, opacity } : undefined}
+        className="group relative w-full max-w-6xl h-auto md:min-h-[460px] rounded-[32px] glass-strong hover:border-purple-500/40 hover:shadow-[0_0_50px_-12px_rgba(139,92,246,0.3)] transition-all duration-500 flex flex-col p-6 md:p-8 overflow-hidden shadow-2xl"
+      >
+        {/* Top Row: Number, Category, Title, Button */}
+        <div className="flex items-center justify-between w-full pb-4">
+          <div className="flex items-center gap-4">
+            {/* Large 2-digit number */}
+            <span className="font-black text-4xl md:text-5xl tracking-tighter text-white font-mono opacity-90">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            {/* Category & Title */}
+            <div className="flex flex-col">
+              <span className="text-[10px] tracking-widest text-purple-300 font-mono font-bold uppercase">
+                {telemetry.category}
+              </span>
+              <h3 className="text-xl md:text-2xl font-bold tracking-wide text-white group-hover:text-purple-300 transition-colors duration-300">
+                {project.title.toUpperCase()}
+              </h3>
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3">
+            <Link
+              href={project.buttonUrl || project.detailPage}
+              target={project.buttonUrl ? "_blank" : undefined}
+              className="px-5 py-2.5 rounded-full border border-white/20 hover:border-white/50 text-white text-[11px] font-mono font-bold tracking-wider transition-all hover:bg-white/5 uppercase cursor-pointer"
+            >
+              {project.buttonUrl ? "LIVE PROJECT ↗" : "VIEW DETAILS ↗"}
+            </Link>
+          </div>
+        </div>
+
+        {/* Divider line */}
+        <div className="w-full border-t border-white/10 mb-5" />
+
+        {/* Main Grid Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full flex-grow">
+          {/* Left Column (Details, tags, system overview, architecture flow) */}
+          <div className="lg:col-span-5 flex flex-col gap-6 justify-between h-full py-1">
+            <div className="space-y-5">
+              {/* Tech Tags */}
+              {project.technologies && project.technologies.length > 0 && (
+                <div className="flex flex-wrap gap-2.5 mb-2">
+                  {project.technologies.slice(0, 6).map((tech) => (
+                    <span
+                      key={tech}
+                      className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-200 font-mono font-medium hover:bg-white/15 transition-colors duration-300"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                  {project.technologies.length > 6 && (
+                    <span className="px-3.5 py-1.5 text-xs md:text-sm rounded-full bg-white/5 border border-white/10 text-gray-400 font-mono font-medium">
+                      +{project.technologies.length - 6} more
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <p className="text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed font-normal">
+                {project.description}
+              </p>
+            </div>
+
+            {/* Architecture Flow HUD widget */}
+            <div className="space-y-2">
+              <span className="text-[10px] tracking-wider text-purple-300 font-mono font-bold block uppercase">ARCHITECTURE FLOW</span>
+              <div className="flex items-center gap-2 flex-wrap bg-white/[0.02] border border-white/5 rounded-2xl p-5">
+                {telemetry.nodes.map((node, nodeIdx) => {
+                  const theme = colorThemes[node.color] || colorThemes.blue;
+                  return (
+                    <div key={node.label} className="flex items-center gap-2">
+                      {nodeIdx > 0 && (
+                        <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
+                      <span className={`px-3 py-1 rounded text-xs font-mono font-bold ${theme.text} ${theme.bg} border ${theme.border} shadow-sm`}>
+                        {node.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* System Overview Widget */}
+            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <span className="text-[10px] tracking-wider text-gray-400 font-mono font-bold block">SYSTEM OVERVIEW</span>
+                <span className="text-sm md:text-base font-extrabold tracking-wide uppercase text-white leading-snug block">
+                  {telemetry.systemOverview}
+                </span>
+              </div>
+              <div className="flex-shrink-0">
+                <svg className="w-14 h-14 text-white/20" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="currentColor" strokeWidth="2" fill="none" strokeDasharray="6 6" className="animate-[spin_20s_linear_infinite]" />
+                  <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="1" fill="none" strokeDasharray="3 3" className="animate-[spin_10s_linear_infinite_reverse]" />
+                  <circle cx="50" cy="50" r="18" fill="rgba(255,255,255,0.05)" />
+                  <text x="50" y="54" textAnchor="middle" fill="currentColor" fontSize="10" fontWeight="bold" fontFamily="monospace" className="tracking-tighter">NODE</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (Screenshot Image - Web/Device Mockup Window) */}
+          <div className="lg:col-span-7 w-full h-full flex items-center justify-center">
+            <div className="relative w-full aspect-[16/10] rounded-3xl border border-white/10 group-hover:border-purple-500/30 bg-zinc-950/40 backdrop-blur-sm transition-all duration-500 shadow-2xl p-3 md:p-4 flex flex-col justify-between">
+              {/* Window Frame */}
+              <div className="relative w-full h-full rounded-2xl overflow-hidden border border-white/10 bg-black/80 flex flex-col shadow-inner">
+                {/* Title Bar */}
+                <div className="h-7 w-full bg-zinc-900/90 border-b border-white/5 flex items-center px-4 justify-between select-none">
+                  {/* Left: Window Controls */}
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-[#ff5f56]" />
+                    <div className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                    <div className="w-2 h-2 rounded-full bg-[#27c93f]" />
+                  </div>
+                  {/* Center: Window Title */}
+                  <div className="text-[10px] font-mono text-gray-500 font-medium tracking-tight">
+                    {project.title.toLowerCase().replace(/\s+/g, '-')}.sys
+                  </div>
+                  {/* Right: Spacer for balance */}
+                  <div className="w-10" />
+                </div>
+                
+                {/* Image Container */}
+                <div className="relative flex-grow w-full bg-zinc-950 overflow-hidden flex items-center justify-center p-2">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hover Gradient Overlay */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-pink-600/5" />
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default function Home() {
   // Dönen fotoğraflar için state
@@ -47,11 +453,18 @@ export default function Home() {
 
   // Dinamik projeler
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Sayfanın tamamı yüklendiğinde ve DOM hazır olduğunda animasyonları başlat
   useEffect(() => {
     // Component mount olduğunda
     setAnimationsInitialized(true);
+
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
 
     // Sadece ilk iki resmi önden yükle
     const currentIdx = currentImageIndex;
@@ -68,6 +481,7 @@ export default function Home() {
     return () => {
       // Component unmount olduğunda
       setAnimationsInitialized(false);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -432,55 +846,15 @@ export default function Home() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="flex flex-col items-center w-full mt-12 gap-0">
             {projects.map((project, index) => (
-              <motion.div
+              <ProjectCard
                 key={project.id}
-                initial={{ y: 30, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="group relative overflow-hidden rounded-2xl glass-strong border border-white/10 hover:border-purple-500/50 transition-all duration-500 card-hover"
-              >
-                <div className="relative aspect-video overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={800}
-                    height={450}
-                    loading="lazy"
-                    quality={85}
-                    className="object-cover w-full h-full transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
-                </div>
-                <div className="absolute inset-0 flex flex-col justify-end p-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    className="space-y-3"
-                  >
-                    <h3 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors duration-300">
-                      {project.title}
-                    </h3>
-                    <p className="text-gray-300 text-sm">{project.description}</p>
-                    <Link
-                      href={project.detailPage}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white hover:bg-purple-600/30 transition-all duration-300 group/btn"
-                    >
-                      <span>View Details</span>
-                      <svg className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                      </svg>
-                    </Link>
-                  </motion.div>
-                </div>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-pink-600/10" />
-                </div>
-              </motion.div>
+                project={project}
+                index={index}
+                total={projects.length}
+                isMobile={isMobile}
+              />
             ))}
           </div>
 

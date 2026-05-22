@@ -160,13 +160,10 @@ export default function IdaInterfaceProject() {
               <div className="glass-strong rounded-2xl p-6 border border-white/10">
                 <h3 className="text-xl font-bold text-white mb-4">Technologies</h3>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">React</span>
-                  <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">Node.js</span>
-                  <span className="px-3 py-1 glass border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-medium">Python</span>
-                  <span className="px-3 py-1 glass border border-purple-500/30 text-purple-400 rounded-full text-xs font-medium">TensorFlow</span>
-                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">D3.js</span>
-                  <span className="px-3 py-1 glass border border-cyan-500/30 text-cyan-400 rounded-full text-xs font-medium">TypeScript</span>
-                  <span className="px-3 py-1 glass border border-pink-500/30 text-pink-400 rounded-full text-xs font-medium">GraphQL</span>
+                  <span className="px-3 py-1 glass border border-blue-500/30 text-blue-400 rounded-full text-xs font-medium">Flutter</span>
+                  <span className="px-3 py-1 glass border border-cyan-500/30 text-cyan-400 rounded-full text-xs font-medium">Python</span>
+                  <span className="px-3 py-1 glass border border-red-500/30 text-red-400 rounded-full text-xs font-medium">Radar</span>
+                  <span className="px-3 py-1 glass border border-green-500/30 text-green-400 rounded-full text-xs font-medium">Telemetry</span>
                 </div>
               </div>
 
