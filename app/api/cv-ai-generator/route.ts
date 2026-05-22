@@ -1,105 +1,92 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
-// NVIDIA API anahtarı (NVIDIA API Catalog için)
-const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY || process.env.NVIDIA_API_KEY || process.env.OPENROUTER_API_KEY || '';
-const TIMEOUT_DURATION = 30000; // 30 saniye
+// NVIDIA API key (for NVIDIA API Catalog)
+const NVIDIA_API_KEY = process.env.NVIDIA_NIM_API_KEY || process.env.NVIDIA_API_KEY || '';
+const TIMEOUT_DURATION = 30000; // 30 seconds
 
-// Zaman aşımı kontrolü için Promise
+// Timeout control Promise
 const timeoutPromise = (ms: number) => {
   return new Promise((_, reject) => {
     setTimeout(() => {
-      reject(new Error('İstek zaman aşımına uğradı.'));
+      reject(new Error('Request timed out.'));
     }, ms);
   });
 };
 
-// API anahtarının geçerli olup olmadığını kontrol eden fonksiyon
+// Check if the API key is valid
 function isValidAPIKey(key: string) {
   return key && key.length >= 20;
 }
 
-// NVIDIA API ile içerik oluşturma (meta/llama-3.3-70b-instruct)
-async function generateWithNvidia(prompt: string) {
-  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${NVIDIA_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'meta/llama-3.3-70b-instruct',
-      messages: [
-        { role: 'system', content: 'Sen profesyonel bir özgeçmiş oluşturucusun. Kullanıcının verdiği bilgilere göre JSON formatında CV hazırlayacaksın.' },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`NVIDIA API Hatası: ${response.status} ${errorText}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-}
-
 export async function POST(request: Request) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, language = 'en' } = await request.json();
 
     // Debug environment variables
     console.log('Environment variables:');
-    console.log('NVIDIA_API_KEY length:', NVIDIA_API_KEY.length);
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('NVIDIA') || key.includes('OPENROUTER') || key.includes('API')));
+    console.log('NVIDIA_API_KEY length:', NVIDIA_API_KEY ? NVIDIA_API_KEY.length : 0);
 
     if (!isValidAPIKey(NVIDIA_API_KEY)) {
-      throw new Error('Geçerli NVIDIA API anahtarı bulunamadı');
+      throw new Error('Valid NVIDIA API key not found');
     }
 
-    const openai = new OpenAI({
-      baseURL: "https://integrate.api.nvidia.com/v1",
-      apiKey: NVIDIA_API_KEY,
-    });
+    const systemPrompt = `You are a CV generation assistant. You must create a professional CV based on the experience details provided by the user.
+      You must reply in the following JSON format:
+      {
+        "fullName": "Full Name",
+        "title": "Position",
+        "location": "Location",
+        "email": "Email",
+        "phone": "Phone",
+        "experience": [{"position": "Position", "company": "Company", "period": "Period", "details": "Details"}],
+        "education": [{"degree": "Degree", "school": "School", "period": "Period", "gpa": "GPA"}],
+        "skills": [{"category": "Skill", "level": "Level"}],
+        "languages": [{"name": "Language", "level": "Level"}],
+        "links": [{"name": "Platform", "url": "URL"}],
+        "projects": [{"name": "Project Name", "description": "Description", "tags": "Tags"}]
+      }
+      All text content (especially positions, details, degrees, descriptions) MUST be written in English.
+      IMPORTANT: Return ONLY valid JSON, no additional text or explanation.`;
 
-    const completion = await openai.chat.completions.create({
-      model: "meta/llama-3.3-70b-instruct",
-      messages: [
-        {
-          role: "system",
-          content: `Sen bir CV oluşturma asistanısın. Kullanıcının girdiği deneyim bilgilerine göre profesyonel bir CV oluşturmalısın. 
-          Yanıtını aşağıdaki JSON formatında vermelisin:
-          {
-            "fullName": "Ad Soyad",
-            "title": "Pozisyon",
-            "location": "Konum",
-            "email": "E-posta",
-            "phone": "Telefon",
-            "experience": [{"position": "Pozisyon", "company": "Şirket", "period": "Dönem", "details": "Detaylar"}],
-            "education": [{"degree": "Derece", "school": "Okul", "period": "Dönem", "gpa": "Not"}],
-            "skills": [{"category": "Beceri", "level": "Seviye"}],
-            "languages": [{"name": "Dil", "level": "Seviye"}],
-            "links": [{"name": "Platform", "url": "URL"}],
-            "projects": [{"name": "Proje Adı", "description": "Açıklama", "tags": "Etiketler"}]
-          }`
+    const response = await Promise.race([
+      fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${NVIDIA_API_KEY}`
         },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-    });
+        body: JSON.stringify({
+          model: 'meta/llama-3.3-70b-instruct',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2000
+        })
+      }),
+      timeoutPromise(TIMEOUT_DURATION)
+    ]) as Response;
 
-    const aiResponse = completion.choices[0].message.content;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`NVIDIA API Error: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content;
 
     if (!aiResponse) {
-      throw new Error('AI yanıtı boş geldi');
+      throw new Error('AI response was empty');
     }
 
-    // AI bazen markdown code block içinde JSON döndürüyor, bunu temizle
+    // AI sometimes returns JSON inside markdown code blocks, clean it up
     let cleanedResponse = aiResponse.trim();
     if (cleanedResponse.startsWith('```json')) {
       cleanedResponse = cleanedResponse.slice(7);
@@ -111,7 +98,7 @@ export async function POST(request: Request) {
     }
     cleanedResponse = cleanedResponse.trim();
 
-    // Regex ile ilk geçerli JSON objesini bulmaya çalış
+    // Try to find the first valid JSON object using regex
     const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
 
     let cvData;
@@ -120,11 +107,11 @@ export async function POST(request: Request) {
         cvData = JSON.parse(jsonMatch[0]);
       } catch (e) {
         console.error('JSON parse error from regex match:', e);
-        // Regex başarısız olursa, temizlenmiş yanıtı doğrudan parse etmeyi dene
+        // If regex match fails, try parsing the cleaned response directly
         cvData = JSON.parse(cleanedResponse);
       }
     } else {
-      // Regex eşleşmezse, temizlenmiş yanıtı doğrudan parse etmeyi dene
+      // If no regex match, try parsing the cleaned response directly
       cvData = JSON.parse(cleanedResponse);
     }
 
@@ -132,8 +119,8 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('AI CV generation failed:', error);
     return NextResponse.json(
-      { error: 'CV oluşturulurken bir hata oluştu' },
+      { error: 'An error occurred while generating the CV' },
       { status: 500 }
     );
   }
-} 
+}

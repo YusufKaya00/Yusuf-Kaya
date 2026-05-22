@@ -4,9 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import html2canvas from 'html2canvas';
-import jspdf from 'jspdf';
-import OpenAI from 'openai';
+// html2canvas and jspdf are imported dynamically inside generatePDF to optimize bundle size
 
 // Form veri tipleri
 type Experience = {
@@ -74,39 +72,74 @@ export default function CVGenerator() {
     projects: [{ name: '', description: '', tags: '' }]
   });
 
-  // Şablon seçimi için state
+  // Template selection state
   const [selectedTemplate, setSelectedTemplate] = useState<'classic' | 'modern' | 'minimal' | 'simple-text' | 'professional' | 'executive' | 'portfolio' | 'portfolio-text' | 'minimal-noexp'>('classic');
 
-  // Dil seçimi için state (TR veya EN)
-  const [language, setLanguage] = useState<'tr' | 'en'>('tr');
+  // Default language is English
+  const [language, setLanguage] = useState<'tr' | 'en'>('en');
 
-  // CV section labels for both languages
+  // CV section labels (English)
   const labels: Record<'tr' | 'en', any> = {
     tr: {
-      experience: 'İŞ DENEYİMİ',
-      education: 'EĞİTİM',
-      skills: 'BECERİLER',
-      languages: 'DİLLER',
-      projects: 'PROJELER',
-      links: 'BAĞLANTILAR',
-      contact: 'İLETİŞİM',
-      gpa: 'Not Ortalaması',
-      position: 'Pozisyon',
-      company: 'Şirket',
-      period: 'Dönem',
-      details: 'Detaylar...',
-      degree: 'Derece',
-      school: 'Okul',
-      skill: 'Beceri',
-      level: 'Seviye',
-      language: 'Dil',
-      fullName: 'Ad Soyad',
-      address: 'Adres',
-      phoneLabel: 'Telefon',
-      emailLabel: 'E-posta',
-      technologies: 'Teknolojiler',
-      projectName: 'Proje Adı',
-      projectDesc: 'Proje açıklaması',
+      experience: 'WORK EXPERIENCE',
+      education: 'EDUCATION',
+      skills: 'SKILLS',
+      languages: 'LANGUAGES',
+      projects: 'PROJECTS',
+      links: 'LINKS',
+      contact: 'CONTACT',
+      gpa: 'GPA',
+      position: 'Position',
+      company: 'Company',
+      period: 'Period',
+      details: 'Details...',
+      degree: 'Degree',
+      school: 'School',
+      skill: 'Skill',
+      level: 'Level',
+      language: 'Language',
+      fullName: 'Full Name',
+      address: 'Address',
+      phoneLabel: 'Phone',
+      emailLabel: 'Email',
+      technologies: 'Technologies',
+      projectName: 'Project Name',
+      projectDesc: 'Project description',
+      remove: 'Remove',
+      addProject: 'Add Project',
+      projectNum: 'Project',
+      descriptionLabel: 'Description',
+      tagsLabel: 'Tags',
+      tagsPlaceholder: 'React, TypeScript, Node.js (comma separated)',
+      previewHeader: 'Preview',
+      backToProjects: 'Back to Projects',
+      downloadPDF: 'Download PDF',
+      classicTemplate: 'Classic',
+      modernTemplate: 'Modern',
+      professionalTemplate: 'Professional',
+      executiveTemplate: 'Executive',
+      minimalTemplate: 'Minimal',
+      simpleTextTemplate: 'Simple Text',
+      projectsHeader: 'My Projects',
+      projectTitlePlaceholder: 'Project name',
+      projectDescPlaceholder: 'Short description of the project',
+      addExperience: 'Add Experience',
+      addEducation: 'Add Education',
+      addSkill: 'Add Skill',
+      addLanguage: 'Add Language',
+      addLink: 'Add Link',
+      linkPlaceholder: 'LinkedIn, Github, etc.',
+      experienceHeader: 'Work Experience',
+      educationHeader: 'Education',
+      personalDetailsHeader: 'Personal Information',
+      enterInformationHeader: 'Enter Information',
+      aiGenerateHeader: 'Auto-generate with AI',
+      aiGenerateLabel: 'Write a few sentences about your experience:',
+      aiGeneratePlaceholder: "I'm a software engineer with 5 years of experience, working with React and Node.js...",
+      aiGenerateButton: 'Auto-fill with AI',
+      aiGeneratingButton: 'Processing...',
+      about: 'ABOUT ME',
+      profile: 'PROFILE'
     },
     en: {
       experience: 'WORK EXPERIENCE',
@@ -133,7 +166,66 @@ export default function CVGenerator() {
       technologies: 'Technologies',
       projectName: 'Project Name',
       projectDesc: 'Project description',
+      remove: 'Remove',
+      addProject: 'Add Project',
+      projectNum: 'Project',
+      descriptionLabel: 'Description',
+      tagsLabel: 'Tags',
+      tagsPlaceholder: 'React, TypeScript, Node.js (comma separated)',
+      previewHeader: 'Preview',
+      backToProjects: 'Back to Projects',
+      downloadPDF: 'Download PDF',
+      classicTemplate: 'Classic',
+      modernTemplate: 'Modern',
+      professionalTemplate: 'Professional',
+      executiveTemplate: 'Executive',
+      minimalTemplate: 'Minimal',
+      simpleTextTemplate: 'Simple Text',
+      projectsHeader: 'My Projects',
+      projectTitlePlaceholder: 'Project name',
+      projectDescPlaceholder: 'Short description of the project',
+      addExperience: 'Add Experience',
+      addEducation: 'Add Education',
+      addSkill: 'Add Skill',
+      addLanguage: 'Add Language',
+      addLink: 'Add Link',
+      linkPlaceholder: 'LinkedIn, Github, etc.',
+      experienceHeader: 'Work Experience',
+      educationHeader: 'Education',
+      personalDetailsHeader: 'Personal Information',
+      enterInformationHeader: 'Enter Information',
+      aiGenerateHeader: 'Auto-generate with AI',
+      aiGenerateLabel: 'Write a few sentences about your experience:',
+      aiGeneratePlaceholder: "I'm a software engineer with 5 years of experience, working with React and Node.js...",
+      aiGenerateButton: 'Auto-fill with AI',
+      aiGeneratingButton: 'Processing...',
+      about: 'ABOUT ME',
+      profile: 'PROFILE'
     }
+  };
+
+  const getSkillWidth = (level: string) => {
+    if (!level) return '70%';
+    const lvl = level.toLowerCase().trim();
+    if (lvl.includes('ileri') || lvl.includes('advanced') || lvl.includes('expert') || lvl.includes('expert level')) return '90%';
+    if (lvl.includes('orta') || lvl.includes('intermediate') || lvl.includes('medium')) return '60%';
+    if (lvl.includes('başlangıç') || lvl.includes('beginner') || lvl.includes('novice')) return '30%';
+    const matchPercent = lvl.match(/(\d+)\s*%/);
+    if (matchPercent) return `${matchPercent[1]}%`;
+    const matchNumber = lvl.match(/(\d+)\s*\/\s*10/);
+    if (matchNumber) return `${parseInt(matchNumber[1]) * 10}%`;
+    return '70%';
+  };
+
+  const getLanguageWidth = (level: string) => {
+    if (!level) return '50%';
+    const lvl = level.toLowerCase().trim();
+    if (lvl.includes('anadil') || lvl.includes('native') || lvl.includes('fluent') || lvl.includes('mükemmel') || lvl.includes('ileri') || lvl.includes('advanced') || lvl.includes('c2') || lvl.includes('c1')) return '100%';
+    if (lvl.includes('orta') || lvl.includes('intermediate') || lvl.includes('b2') || lvl.includes('b1')) return '60%';
+    if (lvl.includes('başlangıç') || lvl.includes('beginner') || lvl.includes('a2') || lvl.includes('a1')) return '40%';
+    const matchPercent = lvl.match(/(\d+)\s*%/);
+    if (matchPercent) return `${matchPercent[1]}%`;
+    return '50%';
   };
 
   // ... (existing code)
@@ -191,16 +283,96 @@ export default function CVGenerator() {
     }));
   };
 
+  // Helper to dynamically shrink spacing and font sizes to fit CV on exactly one page
+  const shrinkSpacings = (element: HTMLElement, ratio: number) => {
+    const walk = (el: HTMLElement) => {
+      const style = el.style;
+      
+      const spacingKeys = [
+        'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
+        'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+        'gap', 'rowGap', 'columnGap'
+      ];
+      spacingKeys.forEach(key => {
+        const val = (style as any)[key];
+        if (val) {
+          const num = parseFloat(val);
+          const unit = val.replace(/^[-\d.]+/, '');
+          if (!isNaN(num) && num > 0) {
+            (style as any)[key] = `${num * ratio}${unit}`;
+          }
+        }
+      });
+      
+      if (style.fontSize) {
+        const val = style.fontSize;
+        const num = parseFloat(val);
+        const unit = val.replace(/^[-\d.]+/, '');
+        if (!isNaN(num)) {
+          style.fontSize = `${num * ratio}${unit}`;
+        }
+      }
+
+      if (style.lineHeight) {
+        const val = style.lineHeight;
+        const num = parseFloat(val);
+        if (!isNaN(num) && num > 1) {
+          style.lineHeight = `${Math.max(1, num * ratio)}`;
+        }
+      }
+
+      // Check classes and override for Tailwind layouts
+      const classes = Array.from(el.classList);
+      classes.forEach(cls => {
+        if (cls.startsWith('p-') || cls.startsWith('py-') || cls.startsWith('px-') || 
+            cls.startsWith('m-') || cls.startsWith('my-') || cls.startsWith('mx-') || 
+            cls.startsWith('mt-') || cls.startsWith('mb-') || cls.startsWith('gap-') || 
+            cls.startsWith('space-y-') || cls.startsWith('text-')) {
+          if (cls === 'p-8') style.padding = `${2 * ratio}rem`;
+          if (cls === 'p-6') style.padding = `${1.5 * ratio}rem`;
+          if (cls === 'p-4') style.padding = `${1 * ratio}rem`;
+          if (cls === 'py-4') style.paddingTop = style.paddingBottom = `${1 * ratio}rem`;
+          if (cls === 'px-6') style.paddingLeft = style.paddingRight = `${1.5 * ratio}rem`;
+          
+          if (cls === 'mt-8') style.marginTop = `${2 * ratio}rem`;
+          if (cls === 'mb-6') style.marginBottom = `${1.5 * ratio}rem`;
+          if (cls === 'mb-4') style.marginBottom = `${1 * ratio}rem`;
+          if (cls === 'mb-3') style.marginBottom = `${0.75 * ratio}rem`;
+          if (cls === 'mb-2') style.marginBottom = `${0.5 * ratio}rem`;
+          if (cls === 'mb-1') style.marginBottom = `${0.25 * ratio}rem`;
+          
+          if (cls === 'gap-6') style.gap = `${1.5 * ratio}rem`;
+          if (cls === 'gap-8') style.gap = `${2 * ratio}rem`;
+          
+          if (cls === 'text-3xl') style.fontSize = `${1.875 * ratio}rem`;
+          if (cls === 'text-2xl') style.fontSize = `${1.5 * ratio}rem`;
+          if (cls === 'text-xl') style.fontSize = `${1.25 * ratio}rem`;
+          if (cls === 'text-lg') style.fontSize = `${1.125 * ratio}rem`;
+          if (cls === 'text-base') style.fontSize = `${1 * ratio}rem`;
+          if (cls === 'text-sm') style.fontSize = `${0.875 * ratio}rem`;
+          if (cls === 'text-xs') style.fontSize = `${0.75 * ratio}rem`;
+        }
+      });
+
+      Array.from(el.children).forEach(child => walk(child as HTMLElement));
+    };
+    walk(element);
+  };
+
   // Generate PDF from the CV container
   const generatePDF = async () => {
     if (cvRef.current) {
       try {
-        // Create a deep clone of the CV container to modify it without affecting the UI
-        const clonedCv = cvRef.current.cloneNode(true) as HTMLElement;
+        const html2canvas = (await import('html2canvas')).default;
+        const jspdf = (await import('jspdf')).default;
+        
+        // Create a deep clone of the CV container to modify spacing
+        let clonedCv = cvRef.current.cloneNode(true) as HTMLElement;
 
-        // Boyutunu A4 kağıdına uygun ayarla
+        // Size it for A4 naturally to measure height
         clonedCv.style.width = '210mm';
-        clonedCv.style.minHeight = '297mm';
+        clonedCv.style.minHeight = 'auto';
+        clonedCv.style.height = 'auto';
         clonedCv.style.padding = '10mm';
         clonedCv.style.boxSizing = 'border-box';
 
@@ -235,19 +407,6 @@ export default function CVGenerator() {
           .bg-black { background-color: #000000 !important; }
           .text-black { color: #000000 !important; }
           
-          /* Adjust font sizes for better visibility */
-          h1 { font-size: 24pt !important; font-weight: bold !important; }
-          h2 { font-size: 18pt !important; font-weight: bold !important; }
-          h3 { font-size: 14pt !important; font-weight: bold !important; }
-          
-          /* Adjust layout for full page */
-          .p-8 { padding: 10mm !important; }
-          
-          /* Ensure content fills the page */
-          .min-h-\\[297mm\\] {
-            min-height: 277mm !important; /* 297mm - 20mm for padding */
-          }
-          
           /* Font style fixes */
           * {
             text-rendering: geometricPrecision !important;
@@ -255,36 +414,19 @@ export default function CVGenerator() {
           }
           
           /* Fix line heights */
-          p, div { line-height: 1.5 !important; }
-          h1, h2, h3 { line-height: 1.3 !important; }
+          p, div { line-height: 1.4 !important; }
+          h1, h2, h3 { line-height: 1.2 !important; }
           
           /* Make full width elements actually full width */
           .w-full { width: 100% !important; }
           
-
-          
           /* Set correct margins/spacing */
           body { margin: 0 !important; }
-          
-          /* Optimize spacing */
-          .mb-1, .my-1, .m-1 { margin-bottom: 0.25rem !important; }
-          .mb-2, .my-2, .m-2 { margin-bottom: 0.5rem !important; }
-          .mb-3, .my-3, .m-3 { margin-bottom: 0.75rem !important; }
-          .mb-4, .my-4, .m-4 { margin-bottom: 1rem !important; }
-          
-          .mt-1, .my-1, .m-1 { margin-top: 0.25rem !important; }
-          .mt-2, .my-2, .m-2 { margin-top: 0.5rem !important; }
-          .mt-3, .my-3, .m-3 { margin-top: 0.75rem !important; }
-          .mt-4, .my-4, .m-4 { margin-top: 1rem !important; }
 
-          /* Modern şablon için grid düzeltmeleri */
+          /* Grid fixes for Modern template */
           .grid-cols-12 { 
             display: grid !important;
             grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
-          }
-          
-          .gap-8 {
-            gap: 2rem !important;
           }
           
           .col-span-8 {
@@ -295,7 +437,7 @@ export default function CVGenerator() {
             grid-column: span 4 / span 4 !important;
           }
           
-          /* Portfolio şablonu için gerekli stiller */
+          /* Required styles for Portfolio template */
           .portfolio-grid {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
@@ -333,24 +475,49 @@ export default function CVGenerator() {
         tempContainer.style.left = '-9999px';
         tempContainer.style.top = '0';
         tempContainer.style.width = '210mm'; // A4 width
-        tempContainer.style.height = '297mm'; // A4 height
+        tempContainer.style.height = 'auto'; // allow natural height measurement
         tempContainer.appendChild(resetStyles);
         tempContainer.appendChild(clonedCv);
         document.body.appendChild(tempContainer);
 
         try {
-          // Daha yüksek kalite için ölçek faktörünü artır (Bellek optimizasyonu için 2.5 -> 2.0 düşürüldü)
-          const scaleFactor = 2.0; // Yüksek kalite için yeterli ve daha güvenli
+          let currentHeight = clonedCv.offsetHeight;
+          const maxHeight = 1120; // 297mm height limit in pixels at 96 DPI
+          let ratio = 1.0;
 
-          // Use html2canvas with specific settings to bypass color function issues
+          // Shrink loop to fit everything onto exactly one page
+          while (currentHeight > maxHeight && ratio >= 0.6) {
+            tempContainer.removeChild(clonedCv);
+            ratio -= 0.05;
+
+            const freshClone = cvRef.current.cloneNode(true) as HTMLElement;
+            freshClone.style.width = '210mm';
+            freshClone.style.minHeight = 'auto';
+            freshClone.style.height = 'auto';
+            freshClone.style.padding = `${10 * ratio}mm`;
+            freshClone.style.boxSizing = 'border-box';
+
+            shrinkSpacings(freshClone, ratio);
+            tempContainer.appendChild(freshClone);
+            clonedCv = freshClone;
+            currentHeight = clonedCv.offsetHeight;
+          }
+
+          // Once it fits (or reached the threshold limit), expand back to exactly A4 page height
+          clonedCv.style.minHeight = '297mm';
+          clonedCv.style.height = '297mm';
+
+          const scaleFactor = 2.0;
+
+          // Use html2canvas to capture the exact layout
           const canvas = await html2canvas(clonedCv, {
             scale: scaleFactor,
             useCORS: true,
             allowTaint: true,
             backgroundColor: '#ffffff',
-            logging: false, // Disable logging
-            width: 210 * 3.779527559, // A4 genişliği piksel (mm to px)
-            height: 297 * 3.779527559, // A4 yüksekliği piksel (mm to px)
+            logging: false,
+            width: 210 * 3.779527559, // A4 width in pixels (~793px)
+            height: 297 * 3.779527559, // A4 height in pixels (~1122px)
             windowWidth: 210 * 3.779527559,
             windowHeight: 297 * 3.779527559,
             onclone: (doc) => {
@@ -362,7 +529,6 @@ export default function CVGenerator() {
                   const bgColor = computedStyle.backgroundColor;
                   const textColor = computedStyle.color;
 
-                  // Apply computed colors directly as inline styles
                   if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)') {
                     el.style.backgroundColor = bgColor;
                   }
@@ -370,43 +536,14 @@ export default function CVGenerator() {
                   if (textColor) {
                     el.style.color = textColor;
                   }
-
-                  // CV içeriğinde boşlukları optimize et
-                  if (el.tagName === 'DIV' && el.classList.contains('mb-6')) {
-                    el.style.marginBottom = '12px';
-                  }
-
-                  // Optimize heading sizes
-                  if (el.tagName === 'H1') {
-                    el.style.fontSize = '24pt';
-                    el.style.fontWeight = 'bold';
-                  } else if (el.tagName === 'H2') {
-                    el.style.fontSize = '18pt';
-                    el.style.fontWeight = 'bold';
-                  } else if (el.tagName === 'H3') {
-                    el.style.fontSize = '14pt';
-                    el.style.fontWeight = 'bold';
-                  }
                 }
               });
-
-              // CV container'ını düzenle
-              const pdfContainer = doc.querySelector('[ref="cvRef"]');
-              if (pdfContainer && pdfContainer instanceof HTMLElement) {
-                pdfContainer.style.width = '190mm'; // A4 - margins
-                pdfContainer.style.minHeight = '277mm'; // A4 - margins
-                pdfContainer.style.padding = '10mm';
-                pdfContainer.style.backgroundColor = '#ffffff';
-                pdfContainer.style.overflow = 'visible';
-                pdfContainer.style.boxSizing = 'border-box';
-              }
             }
           });
 
           // Create PDF with the canvas
-          const imgData = canvas.toDataURL('image/png', 1.0); // Tam kalite
+          const imgData = canvas.toDataURL('image/png', 1.0);
 
-          // PDF oluştur
           const pdf = new jspdf({
             orientation: 'portrait',
             unit: 'mm',
@@ -414,11 +551,9 @@ export default function CVGenerator() {
             compress: true
           });
 
-          // A4 boyutu (mm olarak)
           const pdfWidth = 210;
           const pdfHeight = 297;
 
-          // PDF'in tam boyutuna ayarla
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
           // Download the PDF
@@ -445,7 +580,7 @@ export default function CVGenerator() {
       const response = await fetch('/api/cv-ai-generator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: aiPrompt })
+        body: JSON.stringify({ prompt: aiPrompt, language })
       });
 
       if (!response.ok) {
@@ -531,21 +666,21 @@ export default function CVGenerator() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 shadow-2xl border border-white/10"
           >
-            <h2 className="text-2xl font-semibold mb-6 text-white">Enter Information</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-white">{labels[language].enterInformationHeader}</h2>
 
             {/* AI Generator */}
             <div className="mb-8 rounded-xl p-5 bg-gradient-to-br from-purple-900/30 to-indigo-900/30 border border-purple-500/20">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-purple-500/20">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-purple-500/10 rounded-lg">
                   <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-medium text-purple-300">Auto-generate with AI</h3>
+                <h3 className="text-xl font-medium text-purple-300">{labels[language].aiGenerateHeader}</h3>
               </div>
               <div className="mb-4">
                 <label htmlFor="aiPrompt" className="block text-sm font-medium text-gray-300 mb-2">
-                  Write a few sentences about your experience:
+                  {labels[language].aiGenerateLabel}
                 </label>
                 <textarea
                   id="aiPrompt"
@@ -553,7 +688,7 @@ export default function CVGenerator() {
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                   className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
-                  placeholder="I'm a software engineer with 5 years of experience, working with React and Node.js..."
+                  placeholder={labels[language].aiGeneratePlaceholder}
                 />
               </div>
               <motion.button
@@ -569,14 +704,14 @@ export default function CVGenerator() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Processing...
+                    {labels[language].aiGeneratingButton}
                   </span>
                 ) : (
                   <>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Auto-fill with AI
+                    {labels[language].aiGenerateButton}
                   </>
                 )}
               </motion.button>
@@ -586,12 +721,12 @@ export default function CVGenerator() {
             <div className="space-y-6">
               {/* Personal Details */}
               <div className="space-y-4">
-                <h3 className="text-xl font-medium text-white">Personal Information</h3>
+                <h3 className="text-xl font-medium text-white">{labels[language].personalDetailsHeader}</h3>
 
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
-                      Full Name
+                      {labels[language].fullName}
                     </label>
                     <input
                       type="text"
@@ -605,7 +740,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
-                      Title
+                      {labels[language].position}
                     </label>
                     <input
                       type="text"
@@ -619,7 +754,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="location" className="block text-sm font-medium text-gray-300 mb-1">
-                      Location
+                      {labels[language].address}
                     </label>
                     <input
                       type="text"
@@ -634,7 +769,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                      E-posta
+                      {labels[language].emailLabel}
                     </label>
                     <input
                       type="email"
@@ -649,7 +784,7 @@ export default function CVGenerator() {
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
-                      Phone
+                      {labels[language].phoneLabel}
                     </label>
                     <input
                       type="text"
@@ -667,7 +802,7 @@ export default function CVGenerator() {
               {/* Experience Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Work Experience</h3>
+                  <h3 className="text-xl font-medium text-white">{labels[language].experienceHeader}</h3>
                   <button
                     onClick={() => addItem('experience', { position: '', company: '', period: '', details: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -675,7 +810,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Add Experience
+                    {labels[language].addExperience}
                   </button>
                 </div>
 
@@ -688,7 +823,7 @@ export default function CVGenerator() {
                           onClick={() => removeItem('experience', index)}
                           className="text-red-400 hover:text-red-300 text-sm"
                         >
-                          Remove
+                          {labels[language].remove}
                         </button>
                       )}
                     </div>
@@ -696,7 +831,7 @@ export default function CVGenerator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Position
+                          {labels[language].position}
                         </label>
                         <input
                           type="text"
@@ -708,7 +843,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Company
+                          {labels[language].company}
                         </label>
                         <input
                           type="text"
@@ -720,7 +855,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Period
+                          {labels[language].period}
                         </label>
                         <input
                           type="text"
@@ -734,7 +869,7 @@ export default function CVGenerator() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-1">
-                        Details
+                        {labels[language].details}
                       </label>
                       <textarea
                         rows={3}
@@ -751,7 +886,7 @@ export default function CVGenerator() {
               {/* Education Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Education</h3>
+                  <h3 className="text-xl font-medium text-white">{labels[language].educationHeader}</h3>
                   <button
                     onClick={() => addItem('education', { degree: '', school: '', period: '', gpa: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -759,7 +894,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Add Education
+                    {labels[language].addEducation}
                   </button>
                 </div>
 
@@ -772,7 +907,7 @@ export default function CVGenerator() {
                           onClick={() => removeItem('education', index)}
                           className="text-red-400 hover:text-red-300 text-sm"
                         >
-                          Kaldır
+                          {labels[language].remove}
                         </button>
                       )}
                     </div>
@@ -780,7 +915,7 @@ export default function CVGenerator() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Degree
+                          {labels[language].degree}
                         </label>
                         <input
                           type="text"
@@ -792,7 +927,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          School
+                          {labels[language].school}
                         </label>
                         <input
                           type="text"
@@ -804,7 +939,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          Dönem
+                          {labels[language].period}
                         </label>
                         <input
                           type="text"
@@ -817,7 +952,7 @@ export default function CVGenerator() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-1">
-                          GPA
+                          {labels[language].gpa}
                         </label>
                         <input
                           type="text"
@@ -835,7 +970,7 @@ export default function CVGenerator() {
               {/* Skills Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Skills</h3>
+                  <h3 className="text-xl font-medium text-white">{labels[language].skills}</h3>
                   <button
                     onClick={() => addItem('skills', { category: '', level: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -843,7 +978,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Add Skill
+                    {labels[language].addSkill}
                   </button>
                 </div>
 
@@ -858,7 +993,7 @@ export default function CVGenerator() {
                               onClick={() => removeItem('skills', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Remove
+                              {labels[language].remove}
                             </button>
                           )}
                         </div>
@@ -868,7 +1003,7 @@ export default function CVGenerator() {
                           value={skill.category}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'category')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Skill name"
+                          placeholder={labels[language].skill}
                         />
 
                         <input
@@ -876,7 +1011,7 @@ export default function CVGenerator() {
                           value={skill.level}
                           onChange={(e) => handleInputChange(e, 'skills', index, 'level')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Experienced, Beginner, etc."
+                          placeholder={labels[language].level}
                         />
                       </div>
                     </div>
@@ -887,7 +1022,7 @@ export default function CVGenerator() {
               {/* Languages Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Languages</h3>
+                  <h3 className="text-xl font-medium text-white">{labels[language].languages}</h3>
                   <button
                     onClick={() => addItem('languages', { name: '', level: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -895,12 +1030,12 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Add Language
+                    {labels[language].addLanguage}
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {formData.languages.map((language, index) => (
+                  {formData.languages.map((lang, index) => (
                     <div key={index} className="border border-white/10 rounded-xl p-3 bg-black/20 flex justify-between items-center">
                       <div className="space-y-2 w-full">
                         <div className="flex justify-between items-center">
@@ -910,25 +1045,25 @@ export default function CVGenerator() {
                               onClick={() => removeItem('languages', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Remove
+                              {labels[language].remove}
                             </button>
                           )}
                         </div>
 
                         <input
                           type="text"
-                          value={language.name}
+                          value={lang.name}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'name')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="English, Turkish, etc."
+                          placeholder={labels[language].language}
                         />
 
                         <input
                           type="text"
-                          value={language.level}
+                          value={lang.level}
                           onChange={(e) => handleInputChange(e, 'languages', index, 'level')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="Fluent, Intermediate, Beginner"
+                          placeholder={labels[language].level}
                         />
                       </div>
                     </div>
@@ -939,7 +1074,7 @@ export default function CVGenerator() {
               {/* Links Section */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-medium text-white">Links</h3>
+                  <h3 className="text-xl font-medium text-white">{labels[language].links}</h3>
                   <button
                     onClick={() => addItem('links', { name: '', url: '' })}
                     className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -947,7 +1082,7 @@ export default function CVGenerator() {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                     </svg>
-                    Add Link
+                    {labels[language].addLink}
                   </button>
                 </div>
 
@@ -962,7 +1097,7 @@ export default function CVGenerator() {
                               onClick={() => removeItem('links', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Remove
+                              {labels[language].remove}
                             </button>
                           )}
                         </div>
@@ -972,7 +1107,7 @@ export default function CVGenerator() {
                           value={link.name}
                           onChange={(e) => handleInputChange(e, 'links', index, 'name')}
                           className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          placeholder="LinkedIn, Github, vb."
+                          placeholder={labels[language].linkPlaceholder}
                         />
 
                         <input
@@ -988,11 +1123,11 @@ export default function CVGenerator() {
                 </div>
               </div>
 
-              {/* Projeler Bölümü - Portfolio şablonu seçildiğinde görünür */}
+              {/* Projects Section - Visible when Portfolio template is selected */}
               {(selectedTemplate === 'portfolio' || selectedTemplate === 'portfolio-text' || selectedTemplate === 'minimal-noexp' || selectedTemplate === 'minimal') && (
                 <div className="space-y-4 mt-6 pt-6 border-t border-gray-700">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-medium text-white">Projelerim</h3>
+                    <h3 className="text-xl font-medium text-white">{labels[language].projectsHeader}</h3>
                     <button
                       onClick={() => addItem('projects', { name: '', description: '', tags: '' })}
                       className="text-purple-400 hover:text-purple-300 text-sm flex items-center"
@@ -1000,7 +1135,7 @@ export default function CVGenerator() {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                       </svg>
-                      Proje Ekle
+                      {labels[language].addProject}
                     </button>
                   </div>
 
@@ -1008,13 +1143,13 @@ export default function CVGenerator() {
                     {formData.projects.map((project, index) => (
                       <div key={index} className="border border-white/10 rounded-xl p-4 bg-black/20 space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-gray-400">Proje #{index + 1}</span>
+                          <span className="text-sm font-medium text-gray-400">{labels[language].projectNum} #{index + 1}</span>
                           {formData.projects.length > 1 && (
                             <button
                               onClick={() => removeItem('projects', index)}
                               className="text-red-400 hover:text-red-300 text-xs"
                             >
-                              Kaldır
+                              {labels[language].remove}
                             </button>
                           )}
                         </div>
@@ -1022,40 +1157,40 @@ export default function CVGenerator() {
                         <div className="space-y-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
-                              Proje Adı
+                              {labels[language].projectName}
                             </label>
                             <input
                               type="text"
                               value={project.name}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'name')}
                               className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                              placeholder="Projenin adı"
+                              placeholder={labels[language].projectTitlePlaceholder}
                             />
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
-                              Açıklama
+                              {labels[language].descriptionLabel}
                             </label>
                             <textarea
                               rows={3}
                               value={project.description}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'description')}
                               className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                              placeholder="Proje hakkında kısa açıklama"
+                              placeholder={labels[language].projectDescPlaceholder}
                             />
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-300 mb-1">
-                              Etiketler
+                              {labels[language].tagsLabel}
                             </label>
                             <input
                               type="text"
                               value={project.tags}
                               onChange={(e) => handleInputChange(e, 'projects', index, 'tags')}
                               className="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                              placeholder="React, TypeScript, Node.js (virgülle ayırın)"
+                              placeholder={labels[language].tagsPlaceholder}
                             />
                           </div>
                         </div>
@@ -1076,7 +1211,7 @@ export default function CVGenerator() {
           >
             <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 shadow-2xl border border-white/10 mb-4">
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
-                <h2 className="text-2xl font-semibold text-white">Önizleme</h2>
+                <h2 className="text-2xl font-semibold text-white">{labels[language].previewHeader}</h2>
                 <div className="flex flex-col lg:flex-row items-start lg:items-center gap-3">
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -1086,7 +1221,7 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Klasik
+                      {labels[language].classicTemplate}
                     </button>
                     <button
                       onClick={() => setSelectedTemplate('modern')}
@@ -1095,7 +1230,7 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Modern
+                      {labels[language].modernTemplate}
                     </button>
                     <button
                       onClick={() => setSelectedTemplate('professional')}
@@ -1104,7 +1239,7 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Profesyonel
+                      {labels[language].professionalTemplate}
                     </button>
                     <button
                       onClick={() => setSelectedTemplate('executive')}
@@ -1113,7 +1248,7 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Yönetici
+                      {labels[language].executiveTemplate}
                     </button>
                     <button
                       onClick={() => setSelectedTemplate('minimal')}
@@ -1122,7 +1257,7 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Minimal
+                      {labels[language].minimalTemplate}
                     </button>
                     <button
                       onClick={() => setSelectedTemplate('simple-text')}
@@ -1131,31 +1266,11 @@ export default function CVGenerator() {
                         : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/10'
                         }`}
                     >
-                      Sade Metin
+                      {labels[language].simpleTextTemplate}
                     </button>
                   </div>
 
-                  {/* Language Toggle */}
-                  <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1 border border-white/10">
-                    <button
-                      onClick={() => setLanguage('tr')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${language === 'tr'
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                        : 'text-gray-300 hover:bg-white/10'
-                        }`}
-                    >
-                      🇹🇷 TR
-                    </button>
-                    <button
-                      onClick={() => setLanguage('en')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${language === 'en'
-                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                        : 'text-gray-300 hover:bg-white/10'
-                        }`}
-                    >
-                      🇬🇧 EN
-                    </button>
-                  </div>
+                  {/* Language selection removed - defaulting to English */}
 
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -1166,7 +1281,7 @@ export default function CVGenerator() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    PDF İndir
+                    {labels[language].downloadPDF}
                   </motion.button>
                 </div>
               </div>
@@ -1264,7 +1379,7 @@ export default function CVGenerator() {
                   <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff' }}>
                     {/* Header with gradient */}
                     <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: '#ffffff', padding: '32px' }}>
-                      <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px', margin: 0 }}>
+                      <h1 style={{ fontSize: '32px', fontWeight: 'bold', margin: 0 }}>
                         {formData.fullName || labels[language].fullName}
                       </h1>
                       <p style={{ fontSize: '20px', marginBottom: '16px', margin: '8px 0 16px 0', opacity: 0.9 }}>
@@ -1288,12 +1403,12 @@ export default function CVGenerator() {
                           </h2>
                           {formData.experience.map((exp, index) => (
                             <div key={index} style={{ marginBottom: '20px' }}>
-                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position || 'Pozisyon'}</h3>
+                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position || labels[language].position}</h3>
                               <div style={{ display: 'table', width: '100%', margin: '4px 0', fontSize: '14px', color: '#6b7280' }}>
-                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{exp.company || 'Şirket'}</div>
-                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{exp.period || 'Dönem'}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{exp.company || labels[language].company}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{exp.period || labels[language].period}</div>
                               </div>
-                              <p style={{ fontSize: '14px', color: '#4b5563', whiteSpace: 'pre-line', lineHeight: '1.5', margin: '8px 0 0 0' }}>{exp.details || 'Detaylar...'}</p>
+                              <p style={{ fontSize: '14px', color: '#4b5563', whiteSpace: 'pre-line', lineHeight: '1.5', margin: '8px 0 0 0' }}>{exp.details || labels[language].details}</p>
                             </div>
                           ))}
                         </div>
@@ -1305,12 +1420,12 @@ export default function CVGenerator() {
                           </h2>
                           {formData.education.map((edu, index) => (
                             <div key={index} style={{ marginBottom: '16px' }}>
-                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree || 'Derece'}</h3>
+                              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree || labels[language].degree}</h3>
                               <div style={{ display: 'table', width: '100%', margin: '4px 0', fontSize: '14px', color: '#6b7280' }}>
-                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{edu.school || 'Okul'}</div>
-                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{edu.period || 'Dönem'}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'left' }}>{edu.school || labels[language].school}</div>
+                                <div style={{ display: 'table-cell', textAlign: 'right', whiteSpace: 'nowrap', width: '1%' }}>{edu.period || labels[language].period}</div>
                               </div>
-                              {edu.gpa && <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0' }}>Not: {edu.gpa}</p>}
+                              {edu.gpa && <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0' }}>{labels[language].gpa}: {edu.gpa}</p>}
                             </div>
                           ))}
                         </div>
@@ -1325,13 +1440,13 @@ export default function CVGenerator() {
                           </h2>
                           {formData.skills.map((skill, index) => (
                             <div key={index} style={{ marginBottom: '12px' }}>
-                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{skill.category || 'Beceri'}</div>
+                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{skill.category || labels[language].skill}</div>
                               <div style={{ height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
                                 <div style={{
                                   height: '100%',
                                   backgroundColor: '#6366f1',
                                   borderRadius: '3px',
-                                  width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : skill.level === 'Başlangıç' ? '30%' : '70%'
+                                  width: getSkillWidth(skill.level)
                                 }}></div>
                               </div>
                             </div>
@@ -1343,15 +1458,15 @@ export default function CVGenerator() {
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
                             {labels[language].languages}
                           </h2>
-                          {formData.languages.map((language, index) => (
+                          {formData.languages.map((lang, index) => (
                             <div key={index} style={{ marginBottom: '12px' }}>
-                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{language.name || 'Dil'}</div>
+                              <div style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937', marginBottom: '4px' }}>{lang.name || labels[language].language}</div>
                               <div style={{ height: '6px', backgroundColor: '#e5e7eb', borderRadius: '3px', overflow: 'hidden' }}>
                                 <div style={{
                                   height: '100%',
                                   backgroundColor: '#6366f1',
                                   borderRadius: '3px',
-                                  width: language.level === 'Anadil' ? '100%' : language.level === 'İleri' ? '90%' : language.level === 'Orta' ? '60%' : '40%'
+                                  width: getLanguageWidth(lang.level)
                                 }}></div>
                               </div>
                             </div>
@@ -1361,298 +1476,12 @@ export default function CVGenerator() {
                         {/* Links */}
                         <div>
                           <h2 style={{ fontSize: '16px', fontWeight: 'bold', color: '#6366f1', borderBottom: '2px solid #e0e7ff', paddingBottom: '8px', marginBottom: '16px', textTransform: 'uppercase' }}>
-                            Bağlantılar
+                            {labels[language].links}
                           </h2>
                           {formData.links.map((link, index) => (
                             <div key={index} style={{ marginBottom: '8px', fontSize: '14px' }}>
                               <span style={{ fontWeight: '500', color: '#1f2937' }}>{link.name}: </span>
                               <span style={{ color: '#6366f1', wordBreak: 'break-all' }}>{link.url}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTemplate === 'minimal' && (
-                  <div className="p-8 font-serif">
-                    <div style={{ textAlign: 'left', marginBottom: '2rem' }}>
-                      <h1 style={{ fontSize: '18pt', marginBottom: '0.5rem', fontWeight: 'bold' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '12pt', marginBottom: '0.5rem' }}>{formData.title || labels[language].position}</p>
-
-                      <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                        {formData.location && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Adres: {formData.location}</div>}
-                        {formData.email && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>E-posta: {formData.email}</div>}
-                        {formData.phone && <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>Telefon: {formData.phone}</div>}
-
-                        {formData.links.map((link, index) => (
-                          <div key={index} style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>
-                            {link.name}: {link.url}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <hr style={{ margin: '1rem 0', borderTop: '1px solid #ddd' }} />
-
-                    {/* İş Deneyimi Bölümü */}
-                    {formData.experience.length > 0 && (
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].experience}</h2>
-
-                        {formData.experience.map((exp, index) => (
-                          <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'table', width: '100%' }}>
-                              <div style={{ display: 'table-cell', textAlign: 'left', fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || 'Pozisyon'}</div>
-                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '10pt', whiteSpace: 'nowrap', width: '1%' }}>{exp.period || 'Dönem'}</div>
-                            </div>
-                            <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{exp.company || 'Şirket'}</div>
-                            <div style={{ fontSize: '10pt' }}>{exp.details || 'Detaylar'}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Eğitim Bölümü */}
-                    {formData.education.length > 0 && (
-                      <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].education}</h2>
-
-                        {formData.education.map((edu, index) => (
-                          <div key={index} style={{ marginBottom: '1rem' }}>
-                            <div style={{ display: 'table', width: '100%' }}>
-                              <div style={{ display: 'table-cell', textAlign: 'left', fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</div>
-                              <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '10pt', whiteSpace: 'nowrap', width: '1%' }}>{edu.period || 'Dönem'}</div>
-                            </div>
-                            <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{edu.school || 'Okul'}</div>
-                            {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Beceriler ve Diller Bölümü (Yan yana) */}
-                    <div style={{ display: 'flex', columnGap: '2rem' }}>
-                      {/* Beceriler */}
-                      {formData.skills.length > 0 && (
-                        <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].skills}</h2>
-
-                          {formData.skills.map((skill, index) => (
-                            <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                              <span>{skill.category || 'Beceri'}</span>
-                              <span>{skill.level || 'Seviye'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Diller */}
-                      {formData.languages.length > 0 && (
-                        <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].languages}</h2>
-
-                          {formData.languages.map((language, index) => (
-                            <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                              <span>{language.name || 'Dil'}</span>
-                              <span>{language.level || 'Seviye'}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Professional Template - Clean with sidebar */}
-                {selectedTemplate === 'professional' && (
-                  <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#ffffff', display: 'flex' }}>
-                    {/* Left Sidebar */}
-                    <div style={{ width: '35%', backgroundColor: '#1e3a5f', color: '#ffffff', padding: '24px' }}>
-                      {/* Profile */}
-                      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#ffffff', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <span style={{ fontSize: '32px', color: '#1e3a5f', fontWeight: 'bold' }}>
-                            {formData.fullName?.charAt(0) || 'A'}
-                          </span>
-                        </div>
-                        <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, marginBottom: '8px' }}>
-                          {formData.fullName || 'Ad Soyad'}
-                        </h1>
-                        <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
-                          {formData.title || 'Pozisyon'}
-                        </p>
-                      </div>
-
-                      {/* Contact */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          {labels[language].contact}
-                        </h2>
-                        {formData.email && <div style={{ fontSize: '12px', marginBottom: '8px' }}>✉️ {formData.email}</div>}
-                        {formData.phone && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📞 {formData.phone}</div>}
-                        {formData.location && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📍 {formData.location}</div>}
-                      </div>
-
-                      {/* Skills */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          {labels[language].skills}
-                        </h2>
-                        {formData.skills.map((skill, index) => (
-                          <div key={index} style={{ marginBottom: '10px' }}>
-                            <div style={{ fontSize: '12px', marginBottom: '4px' }}>{skill.category}</div>
-                            <div style={{ height: '4px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}>
-                              <div style={{
-                                height: '100%',
-                                backgroundColor: '#ffffff',
-                                borderRadius: '2px',
-                                width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : '40%'
-                              }}></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Languages */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          {labels[language].languages}
-                        </h2>
-                        {formData.languages.map((language, index) => (
-                          <div key={index} style={{ fontSize: '12px', marginBottom: '6px' }}>
-                            <span style={{ fontWeight: '500' }}>{language.name}</span>
-                            <span style={{ opacity: 0.8 }}> - {language.level}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Links */}
-                      {formData.links.length > 0 && (
-                        <div>
-                          <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                            {labels[language].links}
-                          </h2>
-                          {formData.links.map((link, index) => (
-                            <div key={index} style={{ fontSize: '11px', marginBottom: '6px', wordBreak: 'break-all' }}>
-                              {link.name}: {link.url}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Content */}
-                    <div style={{ flex: 1, padding: '24px' }}>
-                      {/* Experience */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          {labels[language].experience}
-                        </h2>
-                        {formData.experience.map((exp, index) => (
-                          <div key={index} style={{ marginBottom: '16px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position}</h3>
-                            <div style={{ fontSize: '14px', color: '#1e3a5f', fontWeight: '500', margin: '4px 0' }}>{exp.company}</div>
-                            <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '8px' }}>{exp.period}</div>
-                            <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Education */}
-                      <div>
-                        <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          {labels[language].education}
-                        </h2>
-                        {formData.education.map((edu, index) => (
-                          <div key={index} style={{ marginBottom: '12px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
-                            <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree}</h3>
-                            <div style={{ fontSize: '14px', color: '#1e3a5f', margin: '4px 0' }}>{edu.school}</div>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>{edu.period}</div>
-                            {edu.gpa && <div style={{ fontSize: '12px', color: '#6b7280' }}>Not: {edu.gpa}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Executive Template - Elegant for senior positions */}
-                {selectedTemplate === 'executive' && (
-                  <div style={{ fontFamily: 'Georgia, serif', backgroundColor: '#ffffff' }}>
-                    {/* Elegant Header */}
-                    <div style={{ backgroundColor: '#1a1a2e', color: '#ffffff', padding: '40px 32px', textAlign: 'center' }}>
-                      <h1 style={{ fontSize: '36px', fontWeight: 'normal', letterSpacing: '4px', margin: 0, marginBottom: '8px', textTransform: 'uppercase' }}>
-                        {formData.fullName || labels[language].fullName}
-                      </h1>
-                      <div style={{ width: '60px', height: '2px', backgroundColor: '#c9a227', margin: '16px auto' }}></div>
-                      <p style={{ fontSize: '18px', letterSpacing: '2px', margin: 0, color: '#c9a227', textTransform: 'uppercase' }}>
-                        {formData.title || labels[language].position}
-                      </p>
-                    </div>
-
-                    {/* Contact Bar */}
-                    <div style={{ backgroundColor: '#f8f8f8', padding: '16px 32px', display: 'flex', justifyContent: 'center', gap: '32px', fontSize: '13px', color: '#4a4a4a', borderBottom: '1px solid #e0e0e0' }}>
-                      {formData.email && <span>✉ {formData.email}</span>}
-                      {formData.phone && <span>☎ {formData.phone}</span>}
-                      {formData.location && <span>⌂ {formData.location}</span>}
-                    </div>
-
-                    {/* Main Content */}
-                    <div style={{ padding: '32px' }}>
-                      {/* Experience */}
-                      <div style={{ marginBottom: '32px' }}>
-                        <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                          {labels[language].experience}
-                        </h2>
-                        {formData.experience.map((exp, index) => (
-                          <div key={index} style={{ marginBottom: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                              <h3 style={{ fontSize: '16px', fontWeight: 'bold', color: '#1a1a2e', margin: 0 }}>{exp.position}</h3>
-                              <span style={{ fontSize: '13px', color: '#666666', fontStyle: 'italic' }}>{exp.period}</span>
-                            </div>
-                            <div style={{ fontSize: '14px', color: '#c9a227', fontWeight: '500', margin: '4px 0 8px 0' }}>{exp.company}</div>
-                            <p style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Two Columns */}
-                      <div style={{ display: 'flex', gap: '40px' }}>
-                        {/* Education */}
-                        <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            {labels[language].education}
-                          </h2>
-                          {formData.education.map((edu, index) => (
-                            <div key={index} style={{ marginBottom: '12px' }}>
-                              <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#1a1a2e' }}>{edu.degree}</div>
-                              <div style={{ fontSize: '13px', color: '#666666' }}>{edu.school}</div>
-                              <div style={{ fontSize: '12px', color: '#888888', fontStyle: 'italic' }}>{edu.period}</div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Skills & Languages */}
-                        <div style={{ flex: 1 }}>
-                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            {labels[language].skills}
-                          </h2>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-                            {formData.skills.map((skill, index) => (
-                              <span key={index} style={{ fontSize: '12px', padding: '4px 12px', backgroundColor: '#f0f0f0', borderRadius: '4px', color: '#1a1a2e' }}>
-                                {skill.category}
-                              </span>
-                            ))}
-                          </div>
-
-                          <h2 style={{ fontSize: '16px', fontWeight: 'normal', color: '#1a1a2e', borderBottom: '1px solid #c9a227', paddingBottom: '8px', marginBottom: '16px', letterSpacing: '2px', textTransform: 'uppercase' }}>
-                            {labels[language].languages}
-                          </h2>
-                          {formData.languages.map((language, index) => (
-                            <div key={index} style={{ fontSize: '13px', marginBottom: '6px', color: '#4a4a4a' }}>
-                              <span style={{ fontWeight: '500' }}>{language.name}</span> — {language.level}
                             </div>
                           ))}
                         </div>
@@ -1682,11 +1511,11 @@ export default function CVGenerator() {
 
                     <hr style={{ margin: '1rem 0', borderTop: '1px solid #ddd' }} />
 
-                    {/* İki sütunlu düzen */}
+                    {/* Two column layout */}
                     <div style={{ display: 'flex', columnGap: '2rem' }}>
-                      {/* Sol Sütun */}
+                      {/* Left Column */}
                       <div style={{ flex: 1 }}>
-                        {/* Beceriler */}
+                        {/* Skills */}
                         {formData.skills.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].skills}</h2>
@@ -1700,21 +1529,21 @@ export default function CVGenerator() {
                           </div>
                         )}
 
-                        {/* Diller */}
+                        {/* Languages */}
                         {formData.languages.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].languages}</h2>
 
-                            {formData.languages.map((language, index) => (
+                            {formData.languages.map((lang, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span>{language.name || labels[language].language}</span>
-                                <span>{language.level || labels[language].level}</span>
+                                <span>{lang.name || labels[language].language}</span>
+                                <span>{lang.level || labels[language].level}</span>
                               </div>
                             ))}
                           </div>
                         )}
 
-                        {/* Projeler */}
+                        {/* Projects */}
                         {formData.projects.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].projects}</h2>
@@ -1736,9 +1565,9 @@ export default function CVGenerator() {
                         )}
                       </div>
 
-                      {/* Sağ Sütun */}
+                      {/* Right Column */}
                       <div style={{ flex: 2 }}>
-                        {/* İş Deneyimi */}
+                        {/* Work Experience */}
                         {formData.experience.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].experience}</h2>
@@ -1746,17 +1575,17 @@ export default function CVGenerator() {
                             {formData.experience.map((exp, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || 'Pozisyon'}</div>
-                                  <div style={{ fontSize: '10pt' }}>{exp.period || 'Dönem'}</div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || labels[language].position}</div>
+                                  <div style={{ fontSize: '10pt' }}>{exp.period || labels[language].period}</div>
                                 </div>
-                                <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{exp.company || 'Şirket'}</div>
-                                <div style={{ fontSize: '10pt' }}>{exp.details || 'Detaylar'}</div>
+                                <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{exp.company || labels[language].company}</div>
+                                <div style={{ fontSize: '10pt' }}>{exp.details || labels[language].details}</div>
                               </div>
                             ))}
                           </div>
                         )}
 
-                        {/* Eğitim */}
+                        {/* Education */}
                         {formData.education.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
                             <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #ddd', paddingBottom: '0.25rem' }}>{labels[language].education}</h2>
@@ -1764,11 +1593,11 @@ export default function CVGenerator() {
                             {formData.education.map((edu, index) => (
                               <div key={index} style={{ marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                  <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</div>
-                                  <div style={{ fontSize: '10pt' }}>{edu.period || 'Dönem'}</div>
+                                  <div style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || labels[language].degree}</div>
+                                  <div style={{ fontSize: '10pt' }}>{edu.period || labels[language].period}</div>
                                 </div>
-                                <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{edu.school || 'Okul'}</div>
-                                {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
+                                <div style={{ fontSize: '10pt', marginBottom: '0.25rem' }}>{edu.school || labels[language].school}</div>
+                                {edu.gpa && <div style={{ fontSize: '10pt' }}>{labels[language].gpa}: {edu.gpa}</div>}
                               </div>
                             ))}
                           </div>
@@ -1781,35 +1610,35 @@ export default function CVGenerator() {
                 {selectedTemplate === 'portfolio' && (
                   <div className="p-8 bg-white">
                     <div className="bg-purple-600 py-4 px-6 text-white text-center">
-                      <h1 className="text-3xl font-bold mb-1">{formData.fullName || 'AD SOYAD'}</h1>
-                      <p className="text-xl">{formData.title || 'Pozisyon'}</p>
+                      <h1 className="text-3xl font-bold mb-1">{formData.fullName || labels[language].fullName}</h1>
+                      <p className="text-xl">{formData.title || labels[language].position}</p>
                     </div>
 
                     <div className="grid grid-cols-3 gap-6 mt-8">
                       <div className="col-span-1 bg-gray-50 p-4 rounded-lg">
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">İLETİŞİM</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">{labels[language].contact}</h2>
                           <div className="text-sm space-y-2">
                             {formData.email && (
                               <div>
-                                <span className="font-bold">Email:</span> {formData.email}
+                                <span className="font-bold">{labels[language].emailLabel}:</span> {formData.email}
                               </div>
                             )}
                             {formData.phone && (
                               <div>
-                                <span className="font-bold">Telefon:</span> {formData.phone}
+                                <span className="font-bold">{labels[language].phoneLabel}:</span> {formData.phone}
                               </div>
                             )}
                             {formData.location && (
                               <div>
-                                <span className="font-bold">Adres:</span> {formData.location}
+                                <span className="font-bold">{labels[language].address}:</span> {formData.location}
                               </div>
                             )}
                           </div>
                         </div>
 
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">BAĞLANTILAR</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">{labels[language].links}</h2>
                           <div className="text-sm space-y-2">
                             {formData.links.map((link, index) => (
                               <div key={index}>
@@ -1820,16 +1649,16 @@ export default function CVGenerator() {
                         </div>
 
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">YETENEKLER</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">{labels[language].skills}</h2>
                           <div className="text-sm space-y-3">
                             {formData.skills.map((skill, index) => (
                               <div key={index}>
                                 <div className="flex justify-between mb-1">
-                                  <span className="font-bold">{skill.category || 'Beceri'}</span>
-                                  <span>{skill.level || 'Seviye'}</span>
+                                  <span className="font-bold">{skill.category || labels[language].skill}</span>
+                                  <span>{skill.level || labels[language].level}</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                  <div className="bg-purple-600 h-1.5 rounded-full" style={{ width: `${parseInt(skill.level) * 10 || 50}%` }}></div>
+                                  <div className="bg-purple-600 h-1.5 rounded-full" style={{ width: getSkillWidth(skill.level) }}></div>
                                 </div>
                               </div>
                             ))}
@@ -1837,16 +1666,16 @@ export default function CVGenerator() {
                         </div>
 
                         <div>
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">DİLLER</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-2">{labels[language].languages}</h2>
                           <div className="text-sm space-y-3">
-                            {formData.languages.map((language, index) => (
+                            {formData.languages.map((lang, index) => (
                               <div key={index}>
                                 <div className="flex justify-between mb-1">
-                                  <span className="font-bold">{language.name || 'Dil'}</span>
-                                  <span>{language.level || 'Seviye'}</span>
+                                  <span className="font-bold">{lang.name || labels[language].language}</span>
+                                  <span>{lang.level || labels[language].level}</span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                  <div className="bg-purple-600 h-1.5 rounded-full" style={{ width: `${parseInt(language.level) * 10 || 50}%` }}></div>
+                                  <div className="bg-purple-600 h-1.5 rounded-full" style={{ width: getLanguageWidth(lang.level) }}></div>
                                 </div>
                               </div>
                             ))}
@@ -1856,58 +1685,58 @@ export default function CVGenerator() {
 
                       <div className="col-span-2">
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">PROFİL</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">{labels[language].profile}</h2>
                           <p className="text-sm">
-                            {formData.title ? `${formData.fullName} ${formData.title} pozisyonunda çalışan deneyimli bir profesyonel.` : 'Bu alan CV\'nizin kısa bir özetini içerecektir.'}
+                            {formData.title ? `${formData.fullName || labels[language].fullName} is an experienced professional working as a ${formData.title}.` : 'This section will contain a brief summary of your CV.'}
                           </p>
                         </div>
 
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">ÇALIŞMA DENEYİMİ</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">{labels[language].experienceHeader}</h2>
                           <div className="space-y-4">
                             {formData.experience.map((exp, index) => (
                               <div key={index}>
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h3 className="font-bold text-base">{exp.position || 'Pozisyon'}</h3>
-                                    <p className="text-sm text-gray-600">{exp.company || 'Şirket'}</p>
+                                    <h3 className="font-bold text-base">{exp.position || labels[language].position}</h3>
+                                    <p className="text-sm text-gray-600">{exp.company || labels[language].company}</p>
                                   </div>
-                                  <p className="text-sm text-gray-600">{exp.period || 'Dönem'}</p>
+                                  <p className="text-sm text-gray-600">{exp.period || labels[language].period}</p>
                                 </div>
-                                <p className="text-sm mt-1">{exp.details || 'İş detayları'}</p>
+                                <p className="text-sm mt-1">{exp.details || labels[language].details}</p>
                               </div>
                             ))}
                           </div>
                         </div>
 
                         <div className="mb-6">
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">EĞİTİM</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">{labels[language].educationHeader}</h2>
                           <div className="space-y-4">
                             {formData.education.map((edu, index) => (
                               <div key={index}>
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <h3 className="font-bold text-base">{edu.degree || 'Derece'}</h3>
-                                    <p className="text-sm text-gray-600">{edu.school || 'Okul'}</p>
+                                    <h3 className="font-bold text-base">{edu.degree || labels[language].degree}</h3>
+                                    <p className="text-sm text-gray-600">{edu.school || labels[language].school}</p>
                                   </div>
-                                  <p className="text-sm text-gray-600">{edu.period || 'Dönem'}</p>
+                                  <p className="text-sm text-gray-600">{edu.period || labels[language].period}</p>
                                 </div>
-                                {edu.gpa && <p className="text-sm mt-1">GPA: {edu.gpa}</p>}
+                                {edu.gpa && <p className="text-sm mt-1">{labels[language].gpa}: {edu.gpa}</p>}
                               </div>
                             ))}
                           </div>
                         </div>
 
                         <div>
-                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">PROJELER</h2>
+                          <h2 className="text-lg font-bold text-purple-800 border-b-2 border-purple-300 pb-1 mb-3">{labels[language].projectsHeader}</h2>
                           <div className="space-y-4">
                             {formData.projects.map((project, index) => (
                               <div key={index}>
-                                <h3 className="font-bold text-base">{project.name || 'Proje Adı'}</h3>
-                                <p className="text-sm mt-1">{project.description || 'Proje açıklaması'}</p>
+                                <h3 className="font-bold text-base">{project.name || labels[language].projectName}</h3>
+                                <p className="text-sm mt-1">{project.description || labels[language].projectDesc}</p>
                                 {project.tags && (
                                   <p className="text-xs mt-1 text-purple-800">
-                                    <span className="font-bold">Teknolojiler:</span> {project.tags}
+                                    <span className="font-bold">{labels[language].technologies}:</span> {project.tags}
                                   </p>
                                 )}
                               </div>
@@ -1922,8 +1751,8 @@ export default function CVGenerator() {
                 {selectedTemplate === 'portfolio-text' && (
                   <div className="p-8 font-serif">
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                      <h1 style={{ fontSize: '18pt', fontWeight: 'bold', marginBottom: '0.5rem' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '12pt', marginBottom: '1rem' }}>{formData.title || 'Pozisyon'}</p>
+                      <h1 style={{ fontSize: '18pt', fontWeight: 'bold', marginBottom: '0.5rem' }}>{formData.fullName || labels[language].fullName}</h1>
+                      <p style={{ fontSize: '12pt', marginBottom: '1rem' }}>{formData.title || labels[language].position}</p>
 
                       <div style={{ fontSize: '10pt' }}>
                         {formData.location && <span style={{ marginRight: '1rem' }}>{formData.location}</span>}
@@ -1943,27 +1772,27 @@ export default function CVGenerator() {
                     </div>
 
                     <div style={{ marginBottom: '2rem' }}>
-                      <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>HAKKIMDA</h2>
+                      <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].about}</h2>
                       <p style={{ fontSize: '10pt', lineHeight: 1.5 }}>
-                        {formData.title ? `${formData.title} pozisyonunda çalışan profesyonel.` : 'Profesyonel olarak çalışan birey.'}
+                        {formData.title ? `Professional working as ${formData.title}.` : 'Professional working individual.'}
                       </p>
                     </div>
 
-                    {/* Deneyim Bölümü */}
+                    {/* Experience Section */}
                     {formData.experience.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>DENEYİM</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].experience}</h2>
 
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '1.5rem' }}>
                             <div style={{ marginBottom: '0.5rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || 'Pozisyon'}</span>
-                                <span style={{ fontSize: '10pt' }}>{exp.period || 'Dönem'}</span>
+                                <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{exp.position || labels[language].position}</span>
+                                <span style={{ fontSize: '10pt' }}>{exp.period || labels[language].period}</span>
                               </div>
-                              <div style={{ fontSize: '10pt', fontStyle: 'italic', marginBottom: '0.5rem' }}>{exp.company || 'Şirket'}</div>
+                              <div style={{ fontSize: '10pt', fontStyle: 'italic', marginBottom: '0.5rem' }}>{exp.company || labels[language].company}</div>
                             </div>
-                            <p style={{ fontSize: '10pt', lineHeight: 1.5 }}>{exp.details || 'Detaylar'}</p>
+                            <p style={{ fontSize: '10pt', lineHeight: 1.5 }}>{exp.details || labels[language].details}</p>
                           </div>
                         ))}
                       </div>
@@ -1972,16 +1801,16 @@ export default function CVGenerator() {
                     {/* Eğitim Bölümü */}
                     {formData.education.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>EĞİTİM</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].education}</h2>
 
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '1rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || 'Derece'}</span>
-                              <span style={{ fontSize: '10pt' }}>{edu.period || 'Dönem'}</span>
+                              <span style={{ fontWeight: 'bold', fontSize: '11pt' }}>{edu.degree || labels[language].degree}</span>
+                              <span style={{ fontSize: '10pt' }}>{edu.period || labels[language].period}</span>
                             </div>
-                            <div style={{ fontSize: '10pt', fontStyle: 'italic', marginBottom: '0.25rem' }}>{edu.school || 'Okul'}</div>
-                            {edu.gpa && <div style={{ fontSize: '10pt' }}>GPA: {edu.gpa}</div>}
+                            <div style={{ fontSize: '10pt', fontStyle: 'italic', marginBottom: '0.25rem' }}>{edu.school || labels[language].school}</div>
+                            {edu.gpa && <div style={{ fontSize: '10pt' }}>{labels[language].gpa}: {edu.gpa}</div>}
                           </div>
                         ))}
                       </div>
@@ -1990,16 +1819,16 @@ export default function CVGenerator() {
                     {/* Projeler Bölümü */}
                     {formData.projects.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>PROJELER</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center', marginBottom: '1rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].projects}</h2>
 
                         {formData.projects.map((project, index) => (
                           <div key={index} style={{ marginBottom: '1.5rem' }}>
-                            <div style={{ fontWeight: 'bold', fontSize: '11pt', marginBottom: '0.25rem' }}>{project.name || 'Proje Adı'}</div>
-                            <p style={{ fontSize: '10pt', marginBottom: '0.5rem', lineHeight: 1.5 }}>{project.description || 'Proje açıklaması'}</p>
+                            <div style={{ fontWeight: 'bold', fontSize: '11pt', marginBottom: '0.25rem' }}>{project.name || labels[language].projectName}</div>
+                            <p style={{ fontSize: '10pt', marginBottom: '0.5rem', lineHeight: 1.5 }}>{project.description || labels[language].projectDesc}</p>
 
                             {project.tags && (
                               <div style={{ fontSize: '9pt' }}>
-                                <span style={{ fontWeight: 'bold' }}>Teknolojiler: </span>
+                                <span style={{ fontWeight: 'bold' }}>{labels[language].technologies}: </span>
                                 {project.tags}
                               </div>
                             )}
@@ -2014,12 +1843,12 @@ export default function CVGenerator() {
                       <div style={{ flex: 1 }}>
                         {formData.skills.length > 0 && (
                           <div style={{ marginBottom: '1.5rem' }}>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>BECERİLER</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].skills}</h2>
 
                             {formData.skills.map((skill, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span>{skill.category || 'Beceri'}</span>
-                                <span>{skill.level || 'Seviye'}</span>
+                                <span>{skill.category || labels[language].skill}</span>
+                                <span>{skill.level || labels[language].level}</span>
                               </div>
                             ))}
                           </div>
@@ -2027,12 +1856,12 @@ export default function CVGenerator() {
 
                         {formData.languages.length > 0 && (
                           <div>
-                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>DİLLER</h2>
+                            <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].languages}</h2>
 
-                            {formData.languages.map((language, index) => (
+                            {formData.languages.map((lang, index) => (
                               <div key={index} style={{ fontSize: '10pt', display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                <span>{language.name || 'Dil'}</span>
-                                <span>{language.level || 'Seviye'}</span>
+                                <span>{lang.name || labels[language].language}</span>
+                                <span>{lang.level || labels[language].level}</span>
                               </div>
                             ))}
                           </div>
@@ -2041,26 +1870,26 @@ export default function CVGenerator() {
 
                       {/* İletişim */}
                       <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>İLETİŞİM</h2>
+                        <h2 style={{ fontSize: '14pt', fontWeight: 'bold', marginBottom: '0.75rem', borderBottom: '1px solid #000', paddingBottom: '0.25rem' }}>{labels[language].contact}</h2>
 
                         <div style={{ fontSize: '10pt', lineHeight: 1.8 }}>
                           {formData.location && (
                             <div style={{ marginBottom: '0.5rem' }}>
-                              <span style={{ fontWeight: 'bold' }}>Adres: </span>
+                              <span style={{ fontWeight: 'bold' }}>{labels[language].address}: </span>
                               <span>{formData.location}</span>
                             </div>
                           )}
 
                           {formData.email && (
                             <div style={{ marginBottom: '0.5rem' }}>
-                              <span style={{ fontWeight: 'bold' }}>E-posta: </span>
+                              <span style={{ fontWeight: 'bold' }}>{labels[language].emailLabel}: </span>
                               <span>{formData.email}</span>
                             </div>
                           )}
 
                           {formData.phone && (
                             <div style={{ marginBottom: '0.5rem' }}>
-                              <span style={{ fontWeight: 'bold' }}>Telefon: </span>
+                              <span style={{ fontWeight: 'bold' }}>{labels[language].phoneLabel}: </span>
                               <span>{formData.phone}</span>
                             </div>
                           )}
@@ -2079,17 +1908,17 @@ export default function CVGenerator() {
                           {formData.fullName?.charAt(0) || 'A'}
                         </div>
                         <h1 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 8px 0', wordBreak: 'break-word' }}>
-                          {formData.fullName || 'Ad Soyad'}
+                          {formData.fullName || labels[language].fullName}
                         </h1>
                         <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
-                          {formData.title || 'Pozisyon'}
+                          {formData.title || labels[language].position}
                         </p>
                       </div>
 
                       {/* Contact */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          İletişim
+                          {labels[language].contact}
                         </h2>
                         {formData.email && <div style={{ fontSize: '12px', marginBottom: '8px', wordBreak: 'break-all' }}>✉️ {formData.email}</div>}
                         {formData.phone && <div style={{ fontSize: '12px', marginBottom: '8px' }}>📞 {formData.phone}</div>}
@@ -2099,17 +1928,17 @@ export default function CVGenerator() {
                       {/* Skills */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          Beceriler
+                          {labels[language].skills}
                         </h2>
                         {formData.skills.map((skill, index) => (
                           <div key={index} style={{ marginBottom: '10px' }}>
-                            <div style={{ fontSize: '12px', marginBottom: '4px' }}>{skill.category}</div>
+                            <div style={{ fontSize: '12px', marginBottom: '4px' }}>{skill.category || labels[language].skill}</div>
                             <div style={{ height: '4px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: '2px' }}>
                               <div style={{
                                 height: '100%',
                                 backgroundColor: '#ffffff',
                                 borderRadius: '2px',
-                                width: skill.level === 'İleri' ? '90%' : skill.level === 'Orta' ? '60%' : '40%'
+                                width: getSkillWidth(skill.level)
                               }}></div>
                             </div>
                           </div>
@@ -2119,12 +1948,12 @@ export default function CVGenerator() {
                       {/* Languages */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                          Diller
+                          {labels[language].languages}
                         </h2>
-                        {formData.languages.map((language, index) => (
+                        {formData.languages.map((lang, index) => (
                           <div key={index} style={{ fontSize: '12px', marginBottom: '6px' }}>
-                            <span style={{ fontWeight: '500' }}>{language.name}</span>
-                            <span style={{ opacity: 0.8 }}> - {language.level}</span>
+                            <span style={{ fontWeight: '500' }}>{lang.name || labels[language].language}</span>
+                            <span style={{ opacity: 0.8 }}> - {lang.level || labels[language].level}</span>
                           </div>
                         ))}
                       </div>
@@ -2133,7 +1962,7 @@ export default function CVGenerator() {
                       {formData.links.length > 0 && (
                         <div>
                           <h2 style={{ fontSize: '14px', fontWeight: 'bold', borderBottom: '2px solid #ffffff', paddingBottom: '8px', marginBottom: '12px', textTransform: 'uppercase' }}>
-                            Bağlantılar
+                            {labels[language].links}
                           </h2>
                           {formData.links.map((link, index) => (
                             <div key={index} style={{ fontSize: '11px', marginBottom: '6px', wordBreak: 'break-all' }}>
@@ -2149,24 +1978,24 @@ export default function CVGenerator() {
                       {/* Experience - Using Table layout for reliability */}
                       <div style={{ marginBottom: '24px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          İŞ DENEYİMİ
+                          {labels[language].experience}
                         </h2>
                         {formData.experience.map((exp, index) => (
                           <div key={index} style={{ marginBottom: '16px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
                             <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
                               <div style={{ display: 'table-cell', textAlign: 'left' }}>
-                                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position}</h3>
+                                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{exp.position || labels[language].position}</h3>
                               </div>
                             </div>
                             <div style={{ display: 'table', width: '100%', marginBottom: '8px' }}>
                               <div style={{ display: 'table-cell', textAlign: 'left', fontSize: '14px', color: '#1e3a5f', fontWeight: '500' }}>
-                                {exp.company}
+                                {exp.company || labels[language].company}
                               </div>
                               <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', width: '1%' }}>
-                                {exp.period}
+                                {exp.period || labels[language].period}
                               </div>
                             </div>
-                            <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
+                            <p style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details || labels[language].details}</p>
                           </div>
                         ))}
                       </div>
@@ -2174,24 +2003,24 @@ export default function CVGenerator() {
                       {/* Education - Using Table layout */}
                       <div>
                         <h2 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e3a5f', borderBottom: '2px solid #1e3a5f', paddingBottom: '8px', marginBottom: '16px' }}>
-                          EĞİTİM
+                          {labels[language].education}
                         </h2>
                         {formData.education.map((edu, index) => (
                           <div key={index} style={{ marginBottom: '12px', borderLeft: '3px solid #1e3a5f', paddingLeft: '12px' }}>
                             <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
                               <div style={{ display: 'table-cell', textAlign: 'left' }}>
-                                <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree}</h3>
+                                <h3 style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{edu.degree || labels[language].degree}</h3>
                               </div>
                             </div>
                             <div style={{ display: 'table', width: '100%', marginBottom: '4px' }}>
                               <div style={{ display: 'table-cell', textAlign: 'left', fontSize: '14px', color: '#1e3a5f' }}>
-                                {edu.school}
+                                {edu.school || labels[language].school}
                               </div>
                               <div style={{ display: 'table-cell', textAlign: 'right', fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap', width: '1%' }}>
-                                {edu.period}
+                                {edu.period || labels[language].period}
                               </div>
                             </div>
-                            {edu.gpa && <div style={{ fontSize: '12px', color: '#6b7280' }}>Not: {edu.gpa}</div>}
+                            {edu.gpa && <div style={{ fontSize: '12px', color: '#6b7280' }}>{labels[language].gpa}: {edu.gpa}</div>}
                           </div>
                         ))}
                       </div>
@@ -2204,8 +2033,8 @@ export default function CVGenerator() {
                   <div style={{ fontFamily: "'Georgia', serif", backgroundColor: '#ffffff', padding: '40px', color: '#333333' }}>
                     <div style={{ borderBottom: '2px solid #000000', paddingBottom: '20px', marginBottom: '30px', display: 'table', width: '100%' }}>
                       <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
-                        <h1 style={{ fontSize: '32px', fontWeight: 'bold', margin: '0 0 5px 0', textTransform: 'uppercase', letterSpacing: '2px' }}>{formData.fullName || 'Ad Soyad'}</h1>
-                        <p style={{ fontSize: '18px', margin: 0, fontStyle: 'italic', color: '#555555' }}>{formData.title || 'Yönetici Pozisyonu'}</p>
+                        <h1 style={{ fontSize: '32px', fontWeight: 'bold', margin: '0 0 5px 0', textTransform: 'uppercase', letterSpacing: '2px' }}>{formData.fullName || labels[language].fullName}</h1>
+                        <p style={{ fontSize: '18px', margin: 0, fontStyle: 'italic', color: '#555555' }}>{formData.title || labels[language].position}</p>
                       </div>
                       <div style={{ display: 'table-cell', verticalAlign: 'middle', textAlign: 'right', fontSize: '12px', lineHeight: '1.6' }}>
                         <div>{formData.email}</div>
@@ -2216,45 +2045,45 @@ export default function CVGenerator() {
                     </div>
 
                     <div style={{ marginBottom: '30px' }}>
-                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Profesyonel Deneyim</h2>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>{labels[language].experienceHeader}</h2>
                       {formData.experience.map((exp, index) => (
                         <div key={index} style={{ marginBottom: '20px' }}>
                           <div style={{ display: 'table', width: '100%', marginBottom: '5px' }}>
-                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '16px' }}>{exp.position}</div>
-                            <div style={{ display: 'table-cell', textAlign: 'right', fontWeight: 'bold' }}>{exp.company}</div>
+                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '16px' }}>{exp.position || labels[language].position}</div>
+                            <div style={{ display: 'table-cell', textAlign: 'right', fontWeight: 'bold' }}>{exp.company || labels[language].company}</div>
                           </div>
                           <div style={{ display: 'table', width: '100%', marginBottom: '10px' }}>
-                            <div style={{ display: 'table-cell', fontStyle: 'italic', fontSize: '14px', color: '#666' }}>{exp.period}</div>
+                            <div style={{ display: 'table-cell', fontStyle: 'italic', fontSize: '14px', color: '#666' }}>{exp.period || labels[language].period}</div>
                           </div>
-                          <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0 }}>{exp.details}</p>
+                          <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0 }}>{exp.details || labels[language].details}</p>
                         </div>
                       ))}
                     </div>
 
                     <div style={{ marginBottom: '30px' }}>
-                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Eğitim</h2>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>{labels[language].educationHeader}</h2>
                       {formData.education.map((edu, index) => (
                         <div key={index} style={{ marginBottom: '15px' }}>
                           <div style={{ display: 'table', width: '100%' }}>
-                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '15px' }}>{edu.degree}</div>
-                            <div style={{ display: 'table-cell', textAlign: 'right' }}>{edu.school}</div>
+                            <div style={{ display: 'table-cell', fontWeight: 'bold', fontSize: '15px' }}>{edu.degree || labels[language].degree}</div>
+                            <div style={{ display: 'table-cell', textAlign: 'right' }}>{edu.school || labels[language].school}</div>
                           </div>
-                          <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#666', marginTop: '2px' }}>{edu.period}</div>
+                          <div style={{ fontSize: '14px', fontStyle: 'italic', color: '#666', marginTop: '2px' }}>{edu.period || labels[language].period}</div>
                         </div>
                       ))}
                     </div>
 
                     <div style={{ display: 'table', width: '100%' }}>
                       <div style={{ display: 'table-cell', width: '50%', paddingRight: '20px', verticalAlign: 'top' }}>
-                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Yetkinlikler</h2>
+                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>{labels[language].skills}</h2>
                         <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                          {formData.skills.map((s, i) => <span key={i} style={{ display: 'inline-block', backgroundColor: '#f0f0f0', padding: '2px 8px', borderRadius: '4px', marginRight: '5px', marginBottom: '5px' }}>{s.category}</span>)}
+                          {formData.skills.map((s, i) => <span key={i} style={{ display: 'inline-block', backgroundColor: '#f0f0f0', padding: '2px 8px', borderRadius: '4px', marginRight: '5px', marginBottom: '5px' }}>{s.category || labels[language].skill}</span>)}
                         </div>
                       </div>
                       <div style={{ display: 'table-cell', width: '50%', paddingLeft: '20px', verticalAlign: 'top' }}>
-                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>Diller</h2>
+                        <h2 style={{ fontSize: '16px', fontWeight: 'bold', borderBottom: '1px solid #999', paddingBottom: '5px', marginBottom: '15px', textTransform: 'uppercase' }}>{labels[language].languages}</h2>
                         <div style={{ fontSize: '14px' }}>
-                          {formData.languages.map((l, i) => <div key={i} style={{ marginBottom: '5px' }}><strong>{l.name}</strong>: {l.level}</div>)}
+                          {formData.languages.map((lang, i) => <div key={i} style={{ marginBottom: '5px' }}><strong>{lang.name || labels[language].language}</strong>: {lang.level || labels[language].level}</div>)}
                         </div>
                       </div>
                     </div>
@@ -2265,8 +2094,8 @@ export default function CVGenerator() {
                 {selectedTemplate === 'simple-text' && (
                   <div style={{ fontFamily: "'Times New Roman', serif", backgroundColor: '#ffffff', padding: '40px', maxWidth: '800px', margin: '0 auto', color: '#000000' }}>
                     <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{formData.fullName || 'AD SOYAD'}</h1>
-                      <p style={{ fontSize: '16px', fontStyle: 'italic', marginBottom: '12px' }}>{formData.title || 'Pozisyon'}</p>
+                      <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>{formData.fullName || labels[language].fullName}</h1>
+                      <p style={{ fontSize: '16px', fontStyle: 'italic', marginBottom: '12px' }}>{formData.title || labels[language].position}</p>
                       <div style={{ fontSize: '13px', display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
                         {formData.email && <span>{formData.email}</span>}
                         {formData.phone && <span>{formData.phone}</span>}
@@ -2283,14 +2112,14 @@ export default function CVGenerator() {
 
                     {/* Experience */}
                     <div style={{ marginBottom: '24px' }}>
-                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>İş Deneyimi</h2>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>{labels[language].experienceHeader}</h2>
                       {formData.experience.map((exp, index) => (
                         <div key={index} style={{ marginBottom: '20px' }}>
-                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{exp.position}</h3>
+                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{exp.position || labels[language].position}</h3>
                           <div style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '4px' }}>
-                            {exp.company} | {exp.period}
+                            {exp.company || labels[language].company} | {exp.period || labels[language].period}
                           </div>
-                          <p style={{ fontSize: '14px', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details}</p>
+                          <p style={{ fontSize: '14px', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-line' }}>{exp.details || labels[language].details}</p>
                         </div>
                       ))}
                     </div>
@@ -2299,14 +2128,14 @@ export default function CVGenerator() {
 
                     {/* Education */}
                     <div style={{ marginBottom: '24px' }}>
-                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>Eğitim</h2>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>{labels[language].educationHeader}</h2>
                       {formData.education.map((edu, index) => (
                         <div key={index} style={{ marginBottom: '12px' }}>
-                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{edu.degree}</h3>
+                          <h3 style={{ fontSize: '15px', fontWeight: 'bold', marginBottom: '2px' }}>{edu.degree || labels[language].degree}</h3>
                           <div style={{ fontSize: '14px', fontStyle: 'italic', marginBottom: '4px' }}>
-                            {edu.school} | {edu.period}
+                            {edu.school || labels[language].school} | {edu.period || labels[language].period}
                           </div>
-                          {edu.gpa && <div style={{ fontSize: '14px' }}>Not: {edu.gpa}</div>}
+                          {edu.gpa && <div style={{ fontSize: '14px' }}>{labels[language].gpa}: {edu.gpa}</div>}
                         </div>
                       ))}
                     </div>
@@ -2315,14 +2144,14 @@ export default function CVGenerator() {
 
                     {/* Skills & Languages */}
                     <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>Yetenekler & Diller</h2>
+                      <h2 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', marginBottom: '16px', textTransform: 'uppercase' }}>{labels[language].skills} & {labels[language].languages}</h2>
                       <div style={{ fontSize: '14px', marginBottom: '12px' }}>
-                        <strong>Yetenekler: </strong>
-                        {formData.skills.map((s, i) => s.category).join(', ')}
+                        <strong>{labels[language].skills}: </strong>
+                        {formData.skills.map((s, i) => s.category || labels[language].skill).join(', ')}
                       </div>
                       <div style={{ fontSize: '14px' }}>
-                        <strong>Diller: </strong>
-                        {formData.languages.map((l, i) => `${l.name} (${l.level})`).join(', ')}
+                        <strong>{labels[language].languages}: </strong>
+                        {formData.languages.map((lang, i) => `${lang.name || labels[language].language} (${lang.level || labels[language].level})`).join(', ')}
                       </div>
                     </div>
                   </div>
@@ -2334,13 +2163,13 @@ export default function CVGenerator() {
 
         <div className="mt-16 text-center">
           <Link
-            href="/projects"
+            href="/portfolio"
             className="text-indigo-400 hover:text-indigo-300 transition-colors inline-flex items-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
-            Tüm Projelere Dön
+            {labels[language].backToProjects}
           </Link>
         </div>
       </div>
