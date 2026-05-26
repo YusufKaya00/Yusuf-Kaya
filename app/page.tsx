@@ -21,7 +21,7 @@ const BACKGROUND_IMAGES = [
 ] as const;
 
 // Performance: Skills array'ini component dışına al
-const SKILLS = ['React', 'Next.js', 'TypeScript', 'Node.js', 'Python', 'AWS'] as const;
+const SKILLS = ['React', 'Next.js', 'TypeScript', 'Node.js', 'Python', 'AWS', 'DevOps'] as const;
 
 // Proje tipi
 interface Project {
@@ -742,8 +742,8 @@ export default function Home() {
           >
             <p className="text-2xl md:text-4xl text-gray-300 font-light tracking-wide">
               <span className="text-white font-medium">Software Developer</span>
-              <span className="text-purple-400"> • </span>
-              <span className="text-gray-400">Full Stack Engineer</span>
+              <span className="text-purple-400"> - </span>
+              <span className="text-gray-400">Agentic Ai Developer</span>
             </p>
           </motion.div>
 

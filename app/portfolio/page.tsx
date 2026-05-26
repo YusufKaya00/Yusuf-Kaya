@@ -9,7 +9,7 @@ export default function Portfolio() {
     <div className="relative min-h-screen">
       {/* Animated background */}
       <div className="fixed inset-0 w-full h-full">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-transparent" />
         {/* Floating gradient orbs */}
         <motion.div
           animate={{
@@ -46,10 +46,10 @@ export default function Portfolio() {
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               className="inline-block px-4 py-2 rounded-full glass border border-purple-500/30 mb-4"
             >
-              <span className="text-purple-400 text-sm font-medium">Web Applications</span>
+              <span className="text-purple-400 text-sm font-medium">Developer Tools</span>
             </motion.div>
             <h1 className="text-5xl md:text-6xl font-black gradient-text mb-4">
-              My Projects
+              Tools & Utilities
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
               Web applications and tools I've developed

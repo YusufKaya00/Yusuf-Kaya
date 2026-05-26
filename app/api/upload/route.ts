@@ -77,9 +77,9 @@ export async function DELETE(request: Request) {
         const { searchParams } = new URL(request.url);
         const fileName = searchParams.get('fileName');
 
-        if (!fileName) {
+        if (!fileName || !/^project-\d+\.(jpg|jpeg|png|gif|webp)$/i.test(fileName)) {
             return NextResponse.json(
-                { error: 'Dosya adı belirtilmedi' },
+                { error: 'Geçersiz dosya adı formatı veya yetkisiz işlem' },
                 { status: 400 }
             );
         }

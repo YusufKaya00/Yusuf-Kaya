@@ -71,7 +71,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   };
 
   const navLinks = [
-    { href: '/portfolio', label: 'PORTFOLIO' },
+    { href: '/portfolio', label: 'TOOLS' },
     { href: '/blog', label: 'BLOG' },
     { href: '/cv', label: 'MY CV' },
     { href: '/#about', label: 'ABOUT', scrollTo: 'about' },
