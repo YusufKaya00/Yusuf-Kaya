@@ -72,74 +72,152 @@ export function writeBlogsToFile(blogs: BlogPost[]): void {
 const initialBlogs: BlogPost[] = [
   {
     id: '1',
-    title: 'React ile Modern Web Uygulamaları Geliştirme',
-    excerpt: 'React, modern web uygulamaları geliştirmek için popüler bir JavaScript kütüphanesidir. Bu yazıda, React ile web uygulamaları geliştirmenin temellerini ve en iyi uygulamaları ele alacağız...',
-    content: `# React ile Modern Web Uygulamaları Geliştirme
+    title: 'What is DevOps? A Comprehensive Guide to Principles, Practices, and Culture',
+    excerpt: "DevOps is a set of practices that combines software development (Dev) and IT operations (Ops) to shorten the systems development life cycle and deliver high-quality software continuously. Let's explore its core concepts...",
+    content: `# What is DevOps? A Comprehensive Guide to Principles, Practices, and Culture
 
-React, Facebook tarafından geliştirilen ve günümüzde modern web uygulamaları geliştirmek için yaygın olarak kullanılan bir JavaScript kütüphanesidir. Komponent tabanlı mimarisi ve Virtual DOM özelliği sayesinde performanslı ve modüler uygulamalar geliştirmeyi mümkün kılar.
+DevOps is not just a buzzword; it represents a fundamental shift in how modern software organizations deliver value. By bridging the gap between Software Development (Dev) and IT Operations (Ops), DevOps combines people, processes, and tools to enable the continuous deployment of high-quality software.
 
-## React'in Avantajları
+In this guide, we will explore the core pillars of DevOps, its practices, and why it has become the gold standard for software engineering teams worldwide.
 
-- **Komponent Tabanlı Mimari**: Uygulamanızı yeniden kullanılabilir, bağımsız parçalara bölerek geliştirmenizi sağlar.
-- **Virtual DOM**: DOM manipülasyonlarını optimize ederek daha hızlı render süreçleri sunar.
-- **Tek Yönlü Veri Akışı**: Debugging ve hata ayıklamayı kolaylaştırır.
-- **Zengin Ekosistem**: Redux, React Router gibi tamamlayıcı kütüphaneler ile güçlü bir ekosistem sunar.
+---
 
-## Başlangıç için Gerekli Araçlar
+## 🌟 The Core Principles of DevOps
 
-- Node.js ve npm
-- Temel JavaScript/ES6+ bilgisi
-- Bir kod editörü (VS Code önerilir)
-- Create React App veya Next.js gibi bir başlangıç kiti
+To understand DevOps, we must look at the **CALMS** framework, which defines the mindset of the methodology:
 
-Bu temel bilgilerle React öğrenmeye başlayabilir ve modern web uygulamaları geliştirebilirsiniz.`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+1. **C - Culture**: Fostering collaboration, shared responsibility, and open communication between developers, operations, and business stakeholders.
+2. **A - Automation**: Automating repetitive and error-prone tasks (like building, testing, and deployment) to increase efficiency and reliability.
+3. **L - Lean**: Minimizing waste, optimizing workflows, and focusing on delivering value to end-users in small, manageable iterations.
+4. **M - Measurement**: Tracking key metrics (like deployment frequency, lead time for changes, and mean time to recovery) to drive decisions.
+5. **S - Sharing**: Encouraging team members to share knowledge, successes, failures, and resources to promote continuous learning.
+
+---
+
+## 🛠️ Essential DevOps Practices
+
+DevOps relies on a suite of practices that automate and streamline the software development lifecycle (SDLC):
+
+### 1. Continuous Integration (CI) and Continuous Delivery (CD)
+* **Continuous Integration**: Developers merge their code changes into a shared repository frequently. Automated builds and test runs verify these changes, catching integration issues early.
+* **Continuous Delivery**: Automatically building, testing, and preparing code changes for a release to production. This ensures that the codebase is always in a deployable state.
+
+### 2. Infrastructure as Code (IaC)
+Instead of manually configuring servers and networks, IaC allows teams to manage infrastructure using configuration files (e.g., Terraform, Ansible, or CloudFormation). This ensures environments are consistent, reproducible, and version-controlled.
+
+### 3. Microservices Architecture
+Breaking down monolithic applications into smaller, decoupled services that communicate via APIs. Each microservice can be developed, tested, deployed, and scaled independently.
+
+### 4. Continuous Monitoring and Logging
+DevOps teams monitor application performance, infrastructure health, and user metrics in real-time. Tools like Prometheus, Grafana, and the ELK Stack help identify and fix performance bottlenecks or outages before they affect users.
+
+---
+
+## 🚀 The DevOps Lifecycle
+
+The DevOps lifecycle is typically depicted as an infinite loop, representing continuous improvement:
+
+\`\`\`mermaid
+graph LR
+    A((Plan)) --> B((Code))
+    B --> C((Build))
+    C --> D((Test))
+    D --> E((Release))
+    E --> F((Deploy))
+    F --> G((Operate))
+    G --> H((Monitor))
+    H --> A
+\`\`\`
+
+1. **Plan**: Define business value, requirements, and project milestones.
+2. **Code**: Write software and review code.
+3. **Build**: Compile code and build application packages.
+4. **Test**: Run automated security, unit, integration, and performance tests.
+5. **Release & Deploy**: Deliver packages to production environments securely.
+6. **Operate**: Handle server scaling, configuration management, and updates.
+7. **Monitor**: Collect logs, metrics, and user feedback to feed back into the planning phase.
+
+---
+
+## 🏆 Key Benefits of DevOps
+
+Organizations that successfully adopt DevOps see major improvements in their operational and product metrics:
+
+* **Speed**: Release features and bug fixes faster, giving you a competitive edge.
+* **Reliability**: Automated testing and CI/CD pipelines reduce production defects and improve system stability.
+* **Scalability**: Manage complex or changing systems with reduced risk through automation and IaC.
+* **Improved Collaboration**: A shared responsibility culture removes organizational silos and enhances employee engagement.
+
+DevOps is a continuous journey of improvement. By embracing automation, measurement, and a collaborative culture, engineering teams can build resilient software that keeps up with the demands of the modern world.`,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000).toISOString()
   },
   {
     id: '2',
-    title: 'TypeScript ile Tip Güvenliği Sağlama',
-    excerpt: "TypeScript, JavaScript'e statik tip özellikleri ekleyen açık kaynaklı bir programlama dilidir. Bu yazıda, TypeScript'in sunduğu avantajları ve tip güvenliği sağlamanın önemini inceleyeceğiz...",
-    content: `# TypeScript ile Tip Güvenliği Sağlama
+    title: 'Yazılım Testlerinde Temel Yaklaşımlar: Kara Kutu (Black Box) ve Beyaz Kutu (White Box) Testleri',
+    excerpt: 'Yazılım geliştirme sürecinin en kritik aşamalarından biri, geliştirilen kodun doğru, güvenli ve performanslı çalıştığını doğrulamaktır. Yazılım kalitesini garanti altına almak için kullanılan yöntemler genellikle iki temel başlık altında toplanır: Kara Kutu (Black Box) ve Beyaz Kutu (White Box) testleri...',
+    content: `# Yazılım Testlerinde Temel Yaklaşımlar: Kara Kutu (Black Box) ve Beyaz Kutu (White Box) Testleri
 
-TypeScript, Microsoft tarafından geliştirilen ve JavaScript'e statik tip özellikleri ekleyen açık kaynaklı bir programlama dilidir. JavaScript'in üst kümesi olarak çalışır ve derleme zamanında tip kontrolleri yaparak kodunuzu daha güvenli hale getirir.
+Yazılım geliştirme sürecinin en kritik aşamalarından biri, geliştirilen kodun doğru, güvenli ve performanslı çalıştığını doğrulamaktır. Yazılım kalitesini garanti altına almak için kullanılan yöntemler genellikle iki temel başlık altında toplanır: **Kara Kutu (Black Box)** ve **Beyaz Kutu (White Box)** testleri.
 
-## TypeScript'in Avantajları
+Bu yazıda, bu iki test metodolojisinin ne olduğunu, aralarındaki farkları, kullanılan teknikleri ve hangisinin ne zaman tercih edilmesi gerektiğini inceleyeceğiz.
 
-- **Statik Tip Kontrolü**: Derleme zamanında hataları yakalamanıza yardımcı olur.
-- **IDE Desteği**: Kod tamamlama, refaktörleme ve navigasyon özellikleri sunar.
-- **Gelişmiş OOP Özellikleri**: Sınıflar, arayüzler ve kalıtım gibi nesne yönelimli programlama özelliklerini destekler.
-- **Daha İyi Dokümantasyon**: Tip tanımlamaları sayesinde kodunuz kendini dokümante eder.
+---
 
-## TypeScript Kurulumu
+## ⬛ Kara Kutu Testi (Black Box Testing) Nedir?
 
-\`\`\`bash
-npm install -g typescript
-\`\`\`
+Kara Kutu testi, yazılımın **iç kod yapısı, mimarisi veya kodlama detayları bilinmeden** yapılan test yöntemidir. Test uzmanı, sistemi dışarıdan bir kullanıcı veya harici bir sistem gözüyle inceler.
 
-## Basit Bir TypeScript Örneği
+### Temel Özellikleri:
+*   **Odak Noktası**: Sistemin işlevsel (functional) gereksinimleri karşılayıp karşılamadığıdır. Belirtilen girdilere karşılık beklenen çıktıların alınıp alınmadığı kontrol edilir.
+*   **Kod Bilgisi**: Kodlama bilgisi gerektirmez. Test uzmanı kaynak kodları görmez.
+*   **Kimler Yapar?**: Genellikle bağımsız yazılım test uzmanları (QA Engineers) veya son kullanıcılar (UAT - User Acceptance Testing) tarafından gerçekleştirilir.
 
-\`\`\`typescript
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+### Kara Kutu Test Teknikleri:
+1.  **Sınır Değer Analizi (Boundary Value Analysis)**: Girdi aralıklarının sınır noktalarındaki (örn: minimum, maksimum, limit değerleri) davranışları test etme.
+2.  **Eşdeğer Sınıflara Bölme (Equivalence Partitioning)**: Benzer davranışlar sergilemesi beklenen girdi grupları oluşturup, her gruptan en az bir örnek test etme.
+3.  **Karar Tablosu Testi (Decision Table Testing)**: Karmaşık iş kuralları ve girdilerin kombinasyonlarına göre sistem çıktılarının doğruluğunu sınama.
 
-function greetUser(user: User): string {
-  return \`Merhaba, \${user.name}!\`;
-}
+---
 
-const newUser: User = {
-  id: 1,
-  name: "Ahmet",
-  email: "ahmet@example.com"
-};
+## ⬜ Beyaz Kutu Testi (White Box Testing) Nedir?
 
-console.log(greetUser(newUser));
-\`\`\`
+Beyaz Kutu testi (bazen Açık Kutu veya Cam Kutu testi de denir), yazılımın **iç kod yapısının, veri akışının, kontrol döngülerinin ve kod mimarisinin** analiz edildiği test yöntemidir.
 
-TypeScript'in sunduğu tip güvenliği, büyük projelerde hata oranını azaltabilir ve bakım maliyetlerini düşürebilir.`,
+### Temel Özellikleri:
+*   **Odak Noktası**: Kodun tasarımı, veri yollarının doğruluğu, hata işleme mekanizmaları, bellek sızıntıları ve güvenlik açıklarıdır.
+*   **Kod Bilgisi**: Yüksek derecede kodlama ve yazılım mimarisi bilgisi gerektirir. Kaynak koda tam erişim vardır.
+*   **Kimler Yapar?**: Genellikle yazılım geliştiriciler (Developers) veya teknik test mühendisleri (SDET - Software Development Engineer in Test) tarafından gerçekleştirilir.
+
+### Beyaz Kutu Test Teknikleri:
+1.  **Deyim Kapsamı (Statement Coverage)**: Koddaki her bir satırın/deyiminin en az bir kez çalıştırıldığını doğrular.
+2.  **Karar/Dal Kapsamı (Decision/Branch Coverage)**: Koddaki her bir karar noktasının (if/else gibi) hem doğru (true) hem de yanlış (false) dallarının test edilmesini sağlar.
+3.  **Yol Kapsamı (Path Coverage)**: Program içindeki tüm olası yürütme yollarının ayrı ayrı test edilmesidir.
+4.  **Birim Testi (Unit Testing)**: En küçük kod birimlerinin (fonksiyon, sınıf vb.) yalıtılmış olarak test edilmesidir (örn: JUnit, Jest, PyTest araçlarıyla).
+
+---
+
+## 🔄 Kara Kutu ve Beyaz Kutu Testleri Arasındaki Farklar
+
+| Özellik | Kara Kutu (Black Box) | Beyaz Kutu (White Box) |
+| :--- | :--- | :--- |
+| **Kod Bilgisi** | Gerekmez (İç yapı görünmez) | Zorunludur (İç yapı şeffaftır) |
+| **Kapsam** | Gereksinimler ve Kullanıcı Deneyimi | Kod yapısı, Mantıksal Yollar, Yapısal Tasarım |
+| **Test Eden Kişi** | Test Uzmanı (QA) veya Son Kullanıcı | Yazılım Geliştirici (Dev) veya SDET |
+| **Test Türleri** | Fonksiyonel Testler, Sistem ve Kabul Testleri | Birim (Unit), Entegrasyon ve Statik Kod Analizi |
+| **Başlangıç Zamanı** | Yazılımın arayüzü veya fonksiyonları çalışır olduğunda | Geliştirme aşaması başlar başlamaz (Erken aşamada) |
+| **Ana Hedef** | Sistem ne yapmalı? (İşlevsellik) | Sistem bunu nasıl yapıyor? (Güvenilirlik ve Temizlik) |
+
+---
+
+## 🤝 Hangisi Tercih Edilmeli?
+
+Bu iki test yaklaşımı birbirinin rakibi değil, aksine **birbirini tamamlayan** unsurlardır. 
+
+*   Bir uygulamanın birim testleri (Beyaz Kutu) %100 başarıyla geçse bile, modüllerin bir araya geldiğinde kullanıcı gereksinimlerini karşılamaması (Kara Kutu hatası) mümkündür.
+*   Benzer şekilde, dışarıdan mükemmel çalışan bir sistemin (Kara Kutu testi başarılı), iç yapısında ciddi bellek sızıntıları veya güvenlik açıkları (Beyaz Kutu hatası) barındırıyor olması olasıdır.
+
+Bu nedenle, yüksek kaliteli bir yazılım ürünü ortaya koymak için geliştirme sürecinde hem geliştiricilerin **Beyaz Kutu** (özellikle Unit ve Entegrasyon testleri) hem de test ekiplerinin **Kara Kutu** (Sistem ve Kabul testleri) yaklaşımlarını dengeli bir şekilde kullanması en doğru yaklaşımdır.`,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
